@@ -1,0 +1,10 @@
+global:
+  environment: prod
+  namespace: prod
+
+services:
+  frontend:
+    replicas: 2
+
+  backend:
+    replicas: 2
