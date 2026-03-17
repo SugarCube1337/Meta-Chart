@@ -1,0 +1,20 @@
+classDiagram
+    class Global {
+        namespace
+        environment
+    }
+
+    class Service {
+        name
+        image
+        resources
+        env
+    }
+
+    class Ingress {
+        enabled
+        host
+    }
+
+    Global --> Service
+    Service --> Ingress

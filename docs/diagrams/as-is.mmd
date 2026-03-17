@@ -1,0 +1,16 @@
+flowchart TD
+    Dev1 --> ServiceA_Config
+    Dev2 --> ServiceB_Config
+    Dev3 --> ServiceC_Config
+
+    ServiceA_Config --> Kubernetes
+    ServiceB_Config --> Kubernetes
+    ServiceC_Config --> Kubernetes
+
+    note1[Duplicate configs]
+    note2[No standard structure]
+    note3[Hard to maintain]
+
+    ServiceA_Config --> note1
+    ServiceB_Config --> note2
+    ServiceC_Config --> note3

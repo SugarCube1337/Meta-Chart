@@ -1,0 +1,10 @@
+flowchart LR
+    A[values.yaml] --> B[Meta-chart]
+    B --> C[Template Engine]
+    C --> D[Deployment]
+    C --> E[Service]
+    C --> F[Ingress]
+
+    D --> G[Kubernetes Cluster]
+    E --> G
+    F --> G

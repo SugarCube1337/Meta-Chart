@@ -1,0 +1,13 @@
+flowchart TD
+    User --> UnifiedConfig
+    UnifiedConfig --> MetaChart
+    MetaChart --> Templates
+    Templates --> Kubernetes
+
+    note1[Single config structure]
+    note2[Reusable templates]
+    note3[Easy scaling]
+
+    UnifiedConfig --> note1
+    MetaChart --> note2
+    Templates --> note3

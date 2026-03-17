@@ -1,0 +1,10 @@
+sequenceDiagram
+    participant User
+    participant Helm
+    participant Templates
+    participant Kubernetes
+
+    User->>Helm: helm install -f values.yaml
+    Helm->>Templates: render templates
+    Templates->>Helm: generated manifests
+    Helm->>Kubernetes: apply manifests
