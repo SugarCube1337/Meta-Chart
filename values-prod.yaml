@@ -1,0 +1,65 @@
+global:
+  namespace: demo-prod
+  environment: prod
+  imagePullPolicy: IfNotPresent
+
+services:
+  frontend:
+    replicaCount: 3
+    ingress:
+      host: frontend.example.com
+      annotations:
+        nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    resources:
+      requests:
+        cpu: "200m"
+        memory: "256Mi"
+      limits:
+        cpu: "500m"
+        memory: "512Mi"
+    autoscaling:
+      enabled: true
+      minReplicas: 3
+      maxReplicas: 6
+      targetCPUUtilizationPercentage: 70
+  apiGateway:
+    replicaCount: 3
+    ingress:
+      host: api.example.com
+      annotations:
+        nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    resources:
+      requests:
+        cpu: "200m"
+        memory: "256Mi"
+      limits:
+        cpu: "800m"
+        memory: "768Mi"
+    autoscaling:
+      enabled: true
+      minReplicas: 3
+      maxReplicas: 8
+      targetCPUUtilizationPercentage: 65
+  userService:
+    replicaCount: 3
+    resources:
+      requests:
+        cpu: "200m"
+        memory: "256Mi"
+      limits:
+        cpu: "700m"
+        memory: "768Mi"
+    autoscaling:
+      enabled: true
+      minReplicas: 3
+      maxReplicas: 6
+      targetCPUUtilizationPercentage: 70
+  notificationWorker:
+    replicaCount: 2
+    resources:
+      requests:
+        cpu: "100m"
+        memory: "128Mi"
+      limits:
+        cpu: "400m"
+        memory: "256Mi"

@@ -1,0 +1,12 @@
+The vkr-metachart release has been rendered.
+
+Application: {{ .Values.global.applicationName }}
+Environment: {{ .Values.global.environment }}
+Namespace: {{ include "vkr-metachart.namespace" . }}
+
+Rendered services:
+{{- range $serviceName, $service := .Values.services }}
+{{- if $service.enabled }}
+- {{ $serviceName | kebabcase }}
+{{- end }}
+{{- end }}

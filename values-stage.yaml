@@ -1,0 +1,18 @@
+global:
+  namespace: demo-stage
+  environment: stage
+  imagePullPolicy: IfNotPresent
+
+services:
+  frontend:
+    replicaCount: 2
+    ingress:
+      host: frontend.stage.local
+  apiGateway:
+    replicaCount: 2
+    ingress:
+      host: api.stage.local
+  userService:
+    replicaCount: 2
+  notificationWorker:
+    replicaCount: 1

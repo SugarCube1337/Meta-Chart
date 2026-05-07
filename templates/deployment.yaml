@@ -1,0 +1,88 @@
+{{- range $serviceName, $service := .Values.services }}
+{{- if $service.enabled }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "vkr-metachart.serviceFullname" (dict "root" $ "serviceName" $serviceName) }}
+  namespace: {{ include "vkr-metachart.namespace" $ | quote }}
+  labels:
+    {{- include "vkr-metachart.serviceLabels" (dict "root" $ "serviceName" $serviceName) | nindent 4 }}
+  {{- with $.Values.global.commonAnnotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  replicas: {{ $service.replicaCount | default 1 }}
+  selector:
+    matchLabels:
+      {{- include "vkr-metachart.serviceSelectorLabels" (dict "root" $ "serviceName" $serviceName) | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "vkr-metachart.serviceLabels" (dict "root" $ "serviceName" $serviceName) | nindent 8 }}
+      {{- with $.Values.global.commonAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+    spec:
+      containers:
+        - name: {{ $serviceName | kebabcase | quote }}
+          image: "{{ required (printf "services.%s.image.repository is required" $serviceName) $service.image.repository }}:{{ $service.image.tag | default $.Chart.AppVersion }}"
+          imagePullPolicy: {{ $service.image.pullPolicy | default $.Values.global.imagePullPolicy | default "IfNotPresent" }}
+          {{- with $service.command }}
+          command:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with $service.args }}
+          args:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          ports:
+            - name: http
+              containerPort: {{ $service.containerPort | default 8080 }}
+              protocol: TCP
+          {{- if $service.env }}
+          env:
+            {{- range $envName, $envValue := $service.env }}
+            - name: {{ $envName | quote }}
+              value: {{ $envValue | quote }}
+            {{- end }}
+          {{- end }}
+          {{- if or (and $service.configMap $service.configMap.enabled) (and $service.secret $service.secret.enabled) }}
+          envFrom:
+            {{- if and $service.configMap $service.configMap.enabled }}
+            - configMapRef:
+                name: {{ include "vkr-metachart.serviceFullname" (dict "root" $ "serviceName" $serviceName) }}
+            {{- end }}
+            {{- if and $service.secret $service.secret.enabled }}
+            - secretRef:
+                name: {{ include "vkr-metachart.serviceFullname" (dict "root" $ "serviceName" $serviceName) }}
+            {{- end }}
+          {{- end }}
+          {{- with $service.probes.liveness }}
+          {{- if .enabled }}
+          livenessProbe:
+            httpGet:
+              path: {{ .path | default "/" | quote }}
+              port: http
+            initialDelaySeconds: {{ .initialDelaySeconds | default 10 }}
+            periodSeconds: {{ .periodSeconds | default 10 }}
+          {{- end }}
+          {{- end }}
+          {{- with $service.probes.readiness }}
+          {{- if .enabled }}
+          readinessProbe:
+            httpGet:
+              path: {{ .path | default "/" | quote }}
+              port: http
+            initialDelaySeconds: {{ .initialDelaySeconds | default 5 }}
+            periodSeconds: {{ .periodSeconds | default 10 }}
+          {{- end }}
+          {{- end }}
+          {{- with $service.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+{{- end }}
+{{- end }}

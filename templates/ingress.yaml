@@ -1,0 +1,35 @@
+{{- range $serviceName, $service := .Values.services }}
+{{- if and $service.enabled $service.service.enabled $service.ingress.enabled }}
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "vkr-metachart.serviceFullname" (dict "root" $ "serviceName" $serviceName) }}
+  namespace: {{ include "vkr-metachart.namespace" $ | quote }}
+  labels:
+    {{- include "vkr-metachart.serviceLabels" (dict "root" $ "serviceName" $serviceName) | nindent 4 }}
+  {{- with $service.ingress.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  {{- with $service.ingress.className }}
+  ingressClassName: {{ . | quote }}
+  {{- end }}
+  {{- with $service.ingress.tls }}
+  tls:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  rules:
+    - host: {{ required (printf "services.%s.ingress.host is required when ingress is enabled" $serviceName) $service.ingress.host | quote }}
+      http:
+        paths:
+          - path: {{ $service.ingress.path | default "/" | quote }}
+            pathType: {{ $service.ingress.pathType | default "Prefix" }}
+            backend:
+              service:
+                name: {{ include "vkr-metachart.serviceFullname" (dict "root" $ "serviceName" $serviceName) }}
+                port:
+                  number: {{ $service.service.port | default 80 }}
+{{- end }}
+{{- end }}

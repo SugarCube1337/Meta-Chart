@@ -1,0 +1,25 @@
+{{- range $serviceName, $service := .Values.services }}
+{{- if and $service.enabled $service.service.enabled }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "vkr-metachart.serviceFullname" (dict "root" $ "serviceName" $serviceName) }}
+  namespace: {{ include "vkr-metachart.namespace" $ | quote }}
+  labels:
+    {{- include "vkr-metachart.serviceLabels" (dict "root" $ "serviceName" $serviceName) | nindent 4 }}
+  {{- with $service.service.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  type: {{ $service.service.type | default "ClusterIP" }}
+  selector:
+    {{- include "vkr-metachart.serviceSelectorLabels" (dict "root" $ "serviceName" $serviceName) | nindent 4 }}
+  ports:
+    - name: http
+      port: {{ $service.service.port | default 80 }}
+      targetPort: http
+      protocol: TCP
+{{- end }}
+{{- end }}

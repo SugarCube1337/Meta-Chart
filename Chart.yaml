@@ -1,0 +1,14 @@
+apiVersion: v2
+name: vkr-metachart
+description: Helm metachart for unified configuration management of multiservice applications
+version: 0.1.0
+appVersion: "1.0.0"
+type: application
+keywords:
+  - kubernetes
+  - helm
+  - metachart
+  - multiservice
+  - configuration-management
+maintainers:
+  - name: VKR project

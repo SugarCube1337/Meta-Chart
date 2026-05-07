@@ -1,0 +1,16 @@
+{{- range $serviceName, $service := .Values.services }}
+{{- if and $service.enabled $service.configMap.enabled $service.configMap.data }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "vkr-metachart.serviceFullname" (dict "root" $ "serviceName" $serviceName) }}
+  namespace: {{ include "vkr-metachart.namespace" $ | quote }}
+  labels:
+    {{- include "vkr-metachart.serviceLabels" (dict "root" $ "serviceName" $serviceName) | nindent 4 }}
+data:
+  {{- range $key, $value := $service.configMap.data }}
+  {{ $key }}: {{ $value | quote }}
+  {{- end }}
+{{- end }}
+{{- end }}
