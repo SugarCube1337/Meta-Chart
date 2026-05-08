@@ -1,0 +1,29 @@
+flowchart TD
+    A["Meta-Chart"] --> B["Chart.yaml"]
+    A --> C["values.yaml"]
+    A --> D["values-dev.yaml"]
+    A --> E["values-stage.yaml"]
+    A --> F["values-prod.yaml"]
+
+    A --> T["templates/"]
+    T --> T1["_helpers.tpl"]
+    T --> T2["deployment.yaml"]
+    T --> T3["service.yaml"]
+    T --> T4["ingress.yaml"]
+    T --> T5["configmap.yaml"]
+    T --> T6["secret.yaml"]
+    T --> T7["hpa.yaml"]
+
+    A --> X["examples/"]
+    X --> X1["rendered-dev.yaml"]
+    X --> X2["rendered-stage.yaml"]
+    X --> X3["rendered-prod.yaml"]
+
+    A --> M["baseline/manual-k8s/"]
+    M --> M1["frontend.yaml"]
+    M --> M2["api-gateway.yaml"]
+    M --> M3["user-service.yaml"]
+    M --> M4["notification-worker.yaml"]
+
+    A --> DOC["docs/"]
+    A --> S["scripts/"]

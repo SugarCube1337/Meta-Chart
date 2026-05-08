@@ -1,0 +1,14 @@
+flowchart LR
+    A["values.yaml"] --> B["services.*.image<br/>replicaCount<br/>containerPort<br/>resources<br/>probes"]
+    A --> C["services.*.service"]
+    A --> D["services.*.ingress"]
+    A --> E["services.*.config"]
+    A --> F["services.*.secrets"]
+    A --> G["services.*.autoscaling"]
+
+    B --> R1["Deployment"]
+    C --> R2["Service"]
+    D --> R3["Ingress"]
+    E --> R4["ConfigMap"]
+    F --> R5["Secret"]
+    G --> R6["HorizontalPodAutoscaler"]

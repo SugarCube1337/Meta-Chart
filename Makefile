@@ -1,21 +1,21 @@
-CHART_DIR := .
-RELEASE := demo
-
-.PHONY: lint render-dev render-stage render-prod render-all count-lines
-
 lint:
-	helm lint $(CHART_DIR)
+	helm lint .
 
 render-dev:
-	helm template $(RELEASE) $(CHART_DIR) -f values-dev.yaml > examples/rendered-dev.yaml
+	helm template demo . -f values-dev.yaml
 
 render-stage:
-	helm template $(RELEASE) $(CHART_DIR) -f values-stage.yaml > examples/rendered-stage.yaml
+	helm template demo . -f values-stage.yaml
 
 render-prod:
-	helm template $(RELEASE) $(CHART_DIR) -f values-prod.yaml > examples/rendered-prod.yaml
+	helm template demo . -f values-prod.yaml
 
-render-all: render-dev render-stage render-prod
+render-all:
+	helm template demo . -f values-dev.yaml > examples/rendered-dev.yaml
+	helm template demo . -f values-stage.yaml > examples/rendered-stage.yaml
+	helm template demo . -f values-prod.yaml > examples/rendered-prod.yaml
 
 count-lines:
-	python scripts/count_yaml_lines.py baseline/manual-k8s values.yaml values-dev.yaml values-stage.yaml values-prod.yaml templates
+	python scripts/count_yaml_lines.py baseline/manual-k8s
+	python scripts/count_yaml_lines.py values.yaml values-dev.yaml values-stage.yaml values-prod.yaml
+	python scripts/count_yaml_lines.py templates

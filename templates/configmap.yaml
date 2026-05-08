@@ -1,4 +1,7 @@
-{{- range $serviceName, $service := .Values.services }}
+{{- range $serviceName, $rawService := .Values.services }}
+{{- $profileName := $rawService.profile | default "default" -}}
+{{- if not (hasKey $.Values.profiles $profileName) }}{{- fail (printf "services.%s.profile references unknown profile %q" $serviceName $profileName) }}{{- end }}
+{{- $service := mergeOverwrite (deepCopy ($.Values.defaults | default dict)) (deepCopy (get $.Values.profiles $profileName)) (deepCopy $rawService) -}}
 {{- if and $service.enabled $service.configMap.enabled $service.configMap.data }}
 ---
 apiVersion: v1
@@ -7,7 +10,7 @@ metadata:
   name: {{ include "vkr-metachart.serviceFullname" (dict "root" $ "serviceName" $serviceName) }}
   namespace: {{ include "vkr-metachart.namespace" $ | quote }}
   labels:
-    {{- include "vkr-metachart.serviceLabels" (dict "root" $ "serviceName" $serviceName) | nindent 4 }}
+    {{- include "vkr-metachart.serviceLabels" (dict "root" $ "serviceName" $serviceName "service" $service) | nindent 4 }}
 data:
   {{- range $key, $value := $service.configMap.data }}
   {{ $key }}: {{ $value | quote }}

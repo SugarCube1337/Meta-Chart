@@ -1,0 +1,18 @@
+flowchart LR
+    V["values.yaml<br/>services"] --> D["deployment.yaml"]
+    V --> S["service.yaml"]
+    V --> I["ingress.yaml"]
+    V --> C["configmap.yaml"]
+    V --> SEC["secret.yaml"]
+    V --> H["hpa.yaml"]
+
+    DEV["values-dev.yaml"] --> V
+    STAGE["values-stage.yaml"] --> V
+    PROD["values-prod.yaml"] --> V
+
+    D --> RD["Deployment"]
+    S --> RS["Service"]
+    I --> RI["Ingress"]
+    C --> RC["ConfigMap"]
+    SEC --> RSEC["Secret"]
+    H --> RH["HorizontalPodAutoscaler"]

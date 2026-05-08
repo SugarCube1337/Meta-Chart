@@ -1,5 +1,5 @@
 {{/*
-Common helper templates for vkr-metachart.
+Common helper templates for the Helm metachart.
 */}}
 
 {{- define "vkr-metachart.chart" -}}
@@ -16,6 +16,10 @@ Common helper templates for vkr-metachart.
 {{- printf "%s-%s" $root.Release.Name $serviceName | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
 
+{{- define "vkr-metachart.namespace" -}}
+{{- .Values.global.namespace | default .Release.Namespace -}}
+{{- end -}}
+
 {{- define "vkr-metachart.serviceLabels" -}}
 helm.sh/chart: {{ include "vkr-metachart.chart" .root | quote }}
 app.kubernetes.io/name: {{ include "vkr-metachart.serviceName" . | quote }}
@@ -23,6 +27,7 @@ app.kubernetes.io/instance: {{ .root.Release.Name | quote }}
 app.kubernetes.io/managed-by: {{ .root.Release.Service | quote }}
 app.kubernetes.io/part-of: {{ .root.Values.global.applicationName | default .root.Chart.Name | quote }}
 app.kubernetes.io/component: {{ include "vkr-metachart.serviceName" . | quote }}
+app.kubernetes.io/profile: {{ .service.profile | default "custom" | quote }}
 environment: {{ .root.Values.global.environment | default "dev" | quote }}
 {{- with .root.Values.global.commonLabels }}
 {{ toYaml . }}
@@ -34,6 +39,6 @@ app.kubernetes.io/instance: {{ .root.Release.Name | quote }}
 app.kubernetes.io/component: {{ include "vkr-metachart.serviceName" . | quote }}
 {{- end -}}
 
-{{- define "vkr-metachart.namespace" -}}
-{{- .Values.global.namespace | default .Release.Namespace -}}
+{{- define "vkr-metachart.resolveService" -}}
+{{- /* This helper is intentionally not used to return a map: Helm include returns strings. Service resolution is performed in templates. */ -}}
 {{- end -}}

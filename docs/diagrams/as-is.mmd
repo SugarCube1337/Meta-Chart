@@ -1,16 +1,29 @@
 flowchart TD
-    Dev1 --> ServiceA_Config
-    Dev2 --> ServiceB_Config
-    Dev3 --> ServiceC_Config
+    A["Многосервисное приложение"] --> F["frontend"]
+    A --> G["api-gateway"]
+    A --> U["user-service"]
+    A --> N["notification-worker"]
 
-    ServiceA_Config --> Kubernetes
-    ServiceB_Config --> Kubernetes
-    ServiceC_Config --> Kubernetes
+    F --> F1["frontend-deployment.yaml"]
+    F --> F2["frontend-service.yaml"]
+    F --> F3["frontend-ingress.yaml"]
+    F --> F4["frontend-configmap.yaml"]
 
-    note1[Duplicate configs]
-    note2[No standard structure]
-    note3[Hard to maintain]
+    G --> G1["api-gateway-deployment.yaml"]
+    G --> G2["api-gateway-service.yaml"]
+    G --> G3["api-gateway-ingress.yaml"]
+    G --> G4["api-gateway-configmap.yaml"]
 
-    ServiceA_Config --> note1
-    ServiceB_Config --> note2
-    ServiceC_Config --> note3
+    U --> U1["user-service-deployment.yaml"]
+    U --> U2["user-service-service.yaml"]
+    U --> U3["user-service-configmap.yaml"]
+    U --> U4["user-service-secret.yaml"]
+
+    N --> N1["notification-worker-deployment.yaml"]
+    N --> N2["notification-worker-configmap.yaml"]
+    N --> N3["notification-worker-secret.yaml"]
+
+    F1 --> K["Kubernetes API"]
+    G1 --> K
+    U1 --> K
+    N1 --> K

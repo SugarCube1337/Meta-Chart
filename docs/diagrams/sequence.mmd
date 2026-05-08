@@ -1,10 +1,15 @@
-sequenceDiagram
-    participant User
-    participant Helm
-    participant Templates
-    participant Kubernetes
+sequenceDiagram 
+    participant User as Пользователь
+    participant Values as values-файлы
+    participant Helm as Helm CLI
+    participant Templates as Helm templates
+    participant Manifests as Kubernetes-манифесты
+    participant Cluster as Kubernetes API
 
-    User->>Helm: helm install -f values.yaml
-    Helm->>Templates: render templates
-    Templates->>Helm: generated manifests
-    Helm->>Kubernetes: apply manifests
+    User->>Values: задаёт параметры сервисов
+    User->>Helm: запускает helm template или helm install
+    Helm->>Values: загружает values.yaml и файл окружения
+    Helm->>Templates: передаёт объединённые значения
+    Templates->>Manifests: формируют Deployment, Service, Ingress, ConfigMap, Secret
+    Helm->>User: возвращает результат рендеринга
+    Helm->>Cluster: применяет ресурсы при установке или обновлении release

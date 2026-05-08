@@ -1,0 +1,22 @@
+flowchart TD
+    A["values.yaml"] --> G["global"]
+    A --> S["services"]
+
+    G --> G1["environment"]
+    G --> G2["namespace"]
+    G --> G3["imagePullPolicy"]
+
+    S --> F["frontend"]
+    S --> API["apiGateway"]
+    S --> U["userService"]
+    S --> N["notificationWorker"]
+
+    F --> P1["image"]
+    F --> P2["replicaCount"]
+    F --> P3["containerPort"]
+    F --> P4["service"]
+    F --> P5["ingress"]
+    F --> P6["env"]
+    F --> P7["resources"]
+    F --> P8["probes"]
+    F --> P9["autoscaling"]

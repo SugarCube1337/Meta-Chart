@@ -1,13 +1,24 @@
 flowchart TD
-    User --> UnifiedConfig
-    UnifiedConfig --> MetaChart
-    MetaChart --> Templates
-    Templates --> Kubernetes
+    V["values.yaml<br/>базовое описание сервисов"] --> H["Helm-метачарт"]
+    VD["values-dev.yaml<br/>параметры dev"] --> H
+    VS["values-stage.yaml<br/>параметры stage"] --> H
+    VP["values-prod.yaml<br/>параметры prod"] --> H
 
-    note1[Single config structure]
-    note2[Reusable templates]
-    note3[Easy scaling]
+    H --> T1["deployment.yaml"]
+    H --> T2["service.yaml"]
+    H --> T3["ingress.yaml"]
+    H --> T4["configmap.yaml"]
+    H --> T5["secret.yaml"]
+    H --> T6["hpa.yaml"]
 
-    UnifiedConfig --> note1
-    MetaChart --> note2
-    Templates --> note3
+    T1 --> R["Сгенерированные Kubernetes-манифесты"]
+    T2 --> R
+    T3 --> R
+    T4 --> R
+    T5 --> R
+    T6 --> R
+
+    R --> C1["helm lint"]
+    R --> C2["helm template"]
+    C1 --> K["Kubernetes API"]
+    C2 --> K

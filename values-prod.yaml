@@ -1,5 +1,4 @@
 global:
-  namespace: demo-prod
   environment: prod
   imagePullPolicy: IfNotPresent
 
@@ -8,38 +7,36 @@ services:
     replicaCount: 3
     ingress:
       host: frontend.example.com
-      annotations:
-        nginx.ingress.kubernetes.io/ssl-redirect: "true"
     resources:
       requests:
-        cpu: "200m"
+        cpu: "300m"
         memory: "256Mi"
       limits:
-        cpu: "500m"
-        memory: "512Mi"
-    autoscaling:
-      enabled: true
-      minReplicas: 3
-      maxReplicas: 6
-      targetCPUUtilizationPercentage: 70
-  apiGateway:
-    replicaCount: 3
-    ingress:
-      host: api.example.com
-      annotations:
-        nginx.ingress.kubernetes.io/ssl-redirect: "true"
-    resources:
-      requests:
-        cpu: "200m"
-        memory: "256Mi"
-      limits:
-        cpu: "800m"
-        memory: "768Mi"
+        cpu: "1000m"
+        memory: "1024Mi"
     autoscaling:
       enabled: true
       minReplicas: 3
       maxReplicas: 8
+      targetCPUUtilizationPercentage: 70
+
+  apiGateway:
+    replicaCount: 3
+    ingress:
+      host: api.example.com
+    resources:
+      requests:
+        cpu: "300m"
+        memory: "256Mi"
+      limits:
+        cpu: "1000m"
+        memory: "1024Mi"
+    autoscaling:
+      enabled: true
+      minReplicas: 3
+      maxReplicas: 10
       targetCPUUtilizationPercentage: 65
+
   userService:
     replicaCount: 3
     resources:
@@ -49,11 +46,10 @@ services:
       limits:
         cpu: "700m"
         memory: "768Mi"
-    autoscaling:
-      enabled: true
-      minReplicas: 3
-      maxReplicas: 6
-      targetCPUUtilizationPercentage: 70
+    secret:
+      stringData:
+        DB_PASSWORD: prod-password-placeholder
+
   notificationWorker:
     replicaCount: 2
     resources:
@@ -61,5 +57,5 @@ services:
         cpu: "100m"
         memory: "128Mi"
       limits:
-        cpu: "400m"
-        memory: "256Mi"
+        cpu: "500m"
+        memory: "512Mi"

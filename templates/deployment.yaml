@@ -1,4 +1,7 @@
-{{- range $serviceName, $service := .Values.services }}
+{{- range $serviceName, $rawService := .Values.services }}
+{{- $profileName := $rawService.profile | default "default" -}}
+{{- if not (hasKey $.Values.profiles $profileName) }}{{- fail (printf "services.%s.profile references unknown profile %q" $serviceName $profileName) }}{{- end }}
+{{- $service := mergeOverwrite (deepCopy ($.Values.defaults | default dict)) (deepCopy (get $.Values.profiles $profileName)) (deepCopy $rawService) -}}
 {{- if $service.enabled }}
 ---
 apiVersion: apps/v1
@@ -7,20 +10,22 @@ metadata:
   name: {{ include "vkr-metachart.serviceFullname" (dict "root" $ "serviceName" $serviceName) }}
   namespace: {{ include "vkr-metachart.namespace" $ | quote }}
   labels:
-    {{- include "vkr-metachart.serviceLabels" (dict "root" $ "serviceName" $serviceName) | nindent 4 }}
+    {{- include "vkr-metachart.serviceLabels" (dict "root" $ "serviceName" $serviceName "service" $service) | nindent 4 }}
   {{- with $.Values.global.commonAnnotations }}
   annotations:
     {{- toYaml . | nindent 4 }}
   {{- end }}
 spec:
+  {{- if not $service.autoscaling.enabled }}
   replicas: {{ $service.replicaCount | default 1 }}
+  {{- end }}
   selector:
     matchLabels:
-      {{- include "vkr-metachart.serviceSelectorLabels" (dict "root" $ "serviceName" $serviceName) | nindent 6 }}
+      {{- include "vkr-metachart.serviceSelectorLabels" (dict "root" $ "serviceName" $serviceName "service" $service) | nindent 6 }}
   template:
     metadata:
       labels:
-        {{- include "vkr-metachart.serviceLabels" (dict "root" $ "serviceName" $serviceName) | nindent 8 }}
+        {{- include "vkr-metachart.serviceLabels" (dict "root" $ "serviceName" $serviceName "service" $service) | nindent 8 }}
       {{- with $.Values.global.commonAnnotations }}
       annotations:
         {{- toYaml . | nindent 8 }}

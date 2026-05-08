@@ -1,7 +1,5 @@
 global:
-  namespace: demo-stage
   environment: stage
-  imagePullPolicy: IfNotPresent
 
 services:
   frontend:
@@ -14,5 +12,6 @@ services:
       host: api.stage.local
   userService:
     replicaCount: 2
-  notificationWorker:
-    replicaCount: 1
+    secret:
+      stringData:
+        DB_PASSWORD: stage-password

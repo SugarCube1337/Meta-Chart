@@ -1,5 +1,10 @@
-{{- range $serviceName, $service := .Values.services }}
-{{- if and $service.enabled $service.service.enabled $service.ingress.enabled }}
+{{- range $serviceName, $rawService := .Values.services }}
+{{- $profileName := $rawService.profile | default "default" -}}
+{{- if not (hasKey $.Values.profiles $profileName) }}{{- fail (printf "services.%s.profile references unknown profile %q" $serviceName $profileName) }}{{- end }}
+{{- $service := mergeOverwrite (deepCopy ($.Values.defaults | default dict)) (deepCopy (get $.Values.profiles $profileName)) (deepCopy $rawService) -}}
+{{- if and $service.enabled $service.ingress.enabled }}
+{{- if not $service.service.enabled }}{{- fail (printf "services.%s.ingress.enabled=true requires service.enabled=true" $serviceName) }}{{- end }}
+{{- if not $service.ingress.host }}{{- fail (printf "services.%s.ingress.host is required when ingress is enabled" $serviceName) }}{{- end }}
 ---
 apiVersion: networking.k8s.io/v1
 kind: Ingress
@@ -7,7 +12,7 @@ metadata:
   name: {{ include "vkr-metachart.serviceFullname" (dict "root" $ "serviceName" $serviceName) }}
   namespace: {{ include "vkr-metachart.namespace" $ | quote }}
   labels:
-    {{- include "vkr-metachart.serviceLabels" (dict "root" $ "serviceName" $serviceName) | nindent 4 }}
+    {{- include "vkr-metachart.serviceLabels" (dict "root" $ "serviceName" $serviceName "service" $service) | nindent 4 }}
   {{- with $service.ingress.annotations }}
   annotations:
     {{- toYaml . | nindent 4 }}
@@ -21,7 +26,7 @@ spec:
     {{- toYaml . | nindent 4 }}
   {{- end }}
   rules:
-    - host: {{ required (printf "services.%s.ingress.host is required when ingress is enabled" $serviceName) $service.ingress.host | quote }}
+    - host: {{ $service.ingress.host | quote }}
       http:
         paths:
           - path: {{ $service.ingress.path | default "/" | quote }}
@@ -30,6 +35,6 @@ spec:
               service:
                 name: {{ include "vkr-metachart.serviceFullname" (dict "root" $ "serviceName" $serviceName) }}
                 port:
-                  number: {{ $service.service.port | default 80 }}
+                  number: {{ $service.service.port }}
 {{- end }}
 {{- end }}

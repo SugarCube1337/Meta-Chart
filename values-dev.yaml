@@ -1,29 +1,14 @@
 global:
-  namespace: demo-dev
   environment: dev
-  imagePullPolicy: IfNotPresent
 
 services:
   frontend:
-    replicaCount: 1
     ingress:
-      host: frontend.dev.local
-    resources:
-      requests:
-        cpu: "50m"
-        memory: "64Mi"
-      limits:
-        cpu: "200m"
-        memory: "128Mi"
+      host: frontend.local
   apiGateway:
-    replicaCount: 1
     ingress:
-      host: api.dev.local
-    env:
-      LOG_LEVEL: debug
+      host: api.local
   userService:
-    replicaCount: 1
-    env:
-      LOG_LEVEL: debug
-  notificationWorker:
-    replicaCount: 1
+    secret:
+      stringData:
+        DB_PASSWORD: dev-password

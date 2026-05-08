@@ -1,12 +1,7 @@
-The vkr-metachart release has been rendered.
+The metachart release {{ .Release.Name }} has been rendered for environment {{ .Values.global.environment | default "dev" }}.
 
-Application: {{ .Values.global.applicationName }}
-Environment: {{ .Values.global.environment }}
-Namespace: {{ include "vkr-metachart.namespace" . }}
-
-Rendered services:
-{{- range $serviceName, $service := .Values.services }}
-{{- if $service.enabled }}
-- {{ $serviceName | kebabcase }}
-{{- end }}
-{{- end }}
+Useful commands:
+  helm lint .
+  helm template {{ .Release.Name }} . -f values-dev.yaml
+  helm template {{ .Release.Name }} . -f values-stage.yaml
+  helm template {{ .Release.Name }} . -f values-prod.yaml
