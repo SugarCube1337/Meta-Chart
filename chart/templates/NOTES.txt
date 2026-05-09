@@ -1,0 +1,9 @@
+Meta-chart v3 has been rendered.
+
+Release: {{ .Release.Name }}
+Namespace: {{ include "meta-chart.namespace" . }}
+Environment: {{ .Values.global.environment }}
+
+Useful commands:
+  helm template {{ .Release.Name }} . -f values-dev.yaml
+  kubectl get deploy,svc,ingress -n {{ include "meta-chart.namespace" . }}

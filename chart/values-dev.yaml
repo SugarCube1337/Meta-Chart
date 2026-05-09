@@ -1,0 +1,18 @@
+global:
+  environment: dev
+  namespace: demo-dev
+  imageTag: dev
+
+services:
+  frontend:
+    ingress:
+      host: frontend.dev.local
+  apiGateway:
+    ingress:
+      host: api.dev.local
+  userService:
+    config:
+      LOG_LEVEL: debug
+  orderService:
+    config:
+      LOG_LEVEL: debug

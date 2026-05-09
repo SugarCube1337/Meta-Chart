@@ -1,0 +1,44 @@
+{{- $root := . -}}
+{{- $defaults := deepCopy (.Values.defaults | default dict) -}}
+{{- if and .Values.serviceMesh.enabled (eq .Values.serviceMesh.provider "istio") }}
+{{- range $serviceName, $serviceRaw := .Values.services }}
+{{- $profileName := default "api" $serviceRaw.profile -}}
+{{- $profile := deepCopy (index $.Values.profiles $profileName | default dict) -}}
+{{- $service := mergeOverwrite (deepCopy $defaults) $profile (deepCopy $serviceRaw) -}}
+{{- if and $service.enabled $service.service.enabled $service.serviceMesh.enabled $service.serviceMesh.virtualService.enabled }}
+---
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: {{ include "meta-chart.serviceName" (dict "root" $root "serviceName" $serviceName) }}
+  namespace: {{ include "meta-chart.namespace" $root }}
+  labels:
+{{ include "meta-chart.serviceLabels" (dict "root" $root "serviceName" $serviceName) | nindent 4 }}
+spec:
+  hosts:
+{{- if $service.serviceMesh.virtualService.hosts }}
+{{ toYaml $service.serviceMesh.virtualService.hosts | nindent 4 }}
+{{- else if $service.ingress.host }}
+    - {{ $service.ingress.host | quote }}
+{{- else }}
+    - {{ include "meta-chart.serviceDnsName" (dict "root" $root "serviceName" $serviceName) | quote }}
+{{- end }}
+  {{- if $service.serviceMesh.virtualService.gateways }}
+  gateways:
+{{ toYaml $service.serviceMesh.virtualService.gateways | nindent 4 }}
+  {{- else if $root.Values.serviceMesh.gateway.enabled }}
+  gateways:
+    - {{ printf "%s-%s" $root.Release.Name $root.Values.serviceMesh.gateway.name | trunc 63 | trimSuffix "-" }}
+  {{- end }}
+  http:
+    - match:
+        - uri:
+            prefix: {{ $service.serviceMesh.virtualService.pathPrefix | default "/" | quote }}
+      route:
+        - destination:
+            host: {{ include "meta-chart.serviceDnsName" (dict "root" $root "serviceName" $serviceName) | quote }}
+            port:
+              number: {{ $service.service.port | default 80 }}
+{{- end }}
+{{- end }}
+{{- end }}

@@ -1,0 +1,31 @@
+{{- $root := . -}}
+{{- $defaults := deepCopy (.Values.defaults | default dict) -}}
+{{- range $serviceName, $serviceRaw := .Values.services }}
+{{- $profileName := default "api" $serviceRaw.profile -}}
+{{- $profile := deepCopy (index $.Values.profiles $profileName | default dict) -}}
+{{- $service := mergeOverwrite (deepCopy $defaults) $profile (deepCopy $serviceRaw) -}}
+{{- if and $service.enabled $service.autoscaling.enabled }}
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: {{ include "meta-chart.serviceName" (dict "root" $root "serviceName" $serviceName) }}
+  namespace: {{ include "meta-chart.namespace" $root }}
+  labels:
+{{ include "meta-chart.serviceLabels" (dict "root" $root "serviceName" $serviceName) | nindent 4 }}
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: {{ include "meta-chart.serviceName" (dict "root" $root "serviceName" $serviceName) }}
+  minReplicas: {{ $service.autoscaling.minReplicas | default 1 }}
+  maxReplicas: {{ $service.autoscaling.maxReplicas | default 3 }}
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: {{ $service.autoscaling.targetCPUUtilizationPercentage | default 80 }}
+{{- end }}
+{{- end }}

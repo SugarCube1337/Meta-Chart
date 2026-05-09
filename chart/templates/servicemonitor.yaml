@@ -1,0 +1,30 @@
+{{- $root := . -}}
+{{- $defaults := deepCopy (.Values.defaults | default dict) -}}
+{{- if and .Values.monitoring.enabled .Values.monitoring.prometheus.serviceMonitor.enabled }}
+{{- range $serviceName, $serviceRaw := .Values.services }}
+{{- $profileName := default "api" $serviceRaw.profile -}}
+{{- $profile := deepCopy (index $.Values.profiles $profileName | default dict) -}}
+{{- $service := mergeOverwrite (deepCopy $defaults) $profile (deepCopy $serviceRaw) -}}
+{{- if and $service.enabled $service.service.enabled $service.monitoring.enabled }}
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ include "meta-chart.serviceName" (dict "root" $root "serviceName" $serviceName) }}
+  namespace: {{ include "meta-chart.namespace" $root }}
+  labels:
+{{ include "meta-chart.serviceLabels" (dict "root" $root "serviceName" $serviceName) | nindent 4 }}
+{{- with $root.Values.monitoring.prometheus.serviceMonitor.labels }}
+{{ toYaml . | nindent 4 }}
+{{- end }}
+spec:
+  selector:
+    matchLabels:
+{{ include "meta-chart.selectorLabels" (dict "root" $root "serviceName" $serviceName) | nindent 6 }}
+  endpoints:
+    - port: http
+      path: {{ $root.Values.monitoring.prometheus.path | quote }}
+      interval: {{ $root.Values.monitoring.prometheus.serviceMonitor.interval | default "30s" }}
+{{- end }}
+{{- end }}
+{{- end }}

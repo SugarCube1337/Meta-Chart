@@ -1,9 +1,0 @@
-.DS_Store
-.git/
-.gitignore
-README.md
-examples/
-docs/
-scripts/
-baseline/
-*.zip

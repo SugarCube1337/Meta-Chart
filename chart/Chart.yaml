@@ -1,0 +1,16 @@
+apiVersion: v2
+name: meta-chart
+description: Platform-style Helm metachart for multi-service configuration management
+# The chart is an application chart, but it acts as an infrastructure template layer
+# for a group of services described through a single values model.
+type: application
+version: 0.3.0
+appVersion: "1.0.0"
+keywords:
+  - kubernetes
+  - helm
+  - metachart
+  - microservices
+  - configuration-management
+maintainers:
+  - name: VKR Project

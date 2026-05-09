@@ -1,7 +1,0 @@
-The metachart release {{ .Release.Name }} has been rendered for environment {{ .Values.global.environment | default "dev" }}.
-
-Useful commands:
-  helm lint .
-  helm template {{ .Release.Name }} . -f values-dev.yaml
-  helm template {{ .Release.Name }} . -f values-stage.yaml
-  helm template {{ .Release.Name }} . -f values-prod.yaml

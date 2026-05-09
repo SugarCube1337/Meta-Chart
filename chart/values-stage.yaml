@@ -1,5 +1,7 @@
 global:
   environment: stage
+  namespace: demo-stage
+  imageTag: stage
 
 services:
   frontend:
@@ -12,6 +14,5 @@ services:
       host: api.stage.local
   userService:
     replicaCount: 2
-    secret:
-      stringData:
-        DB_PASSWORD: stage-password
+  orderService:
+    replicaCount: 2

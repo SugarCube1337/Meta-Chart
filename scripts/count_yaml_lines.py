@@ -1,57 +1,50 @@
 #!/usr/bin/env python3
-"""Count non-empty and non-comment YAML/template lines for VKR comparison."""
-
 from __future__ import annotations
 
 import sys
 from pathlib import Path
-from typing import Iterable
 
-SUPPORTED_SUFFIXES = {".yaml", ".yml", ".tpl", ".txt"}
-
-
-def iter_files(paths: Iterable[str]) -> Iterable[Path]:
-    for raw_path in paths:
-        path = Path(raw_path)
-        if path.is_dir():
-            for child in sorted(path.rglob("*")):
-                if child.is_file() and child.suffix in SUPPORTED_SUFFIXES:
-                    yield child
-        elif path.is_file():
-            yield path
+EXTENSIONS = {".yaml", ".yml"}
 
 
-def count_effective_lines(path: Path) -> int:
-    count = 0
-    for line in path.read_text(encoding="utf-8").splitlines():
-        stripped = line.strip()
-        if not stripped:
-            continue
-        if stripped.startswith("#"):
-            continue
-        count += 1
-    return count
+def count_lines(path: Path) -> int:
+    text = path.read_text(encoding="utf-8")
+    return sum(1 for line in text.splitlines() if line.strip() and not line.lstrip().startswith("#"))
 
 
-def main() -> int:
-    if len(sys.argv) < 2:
+def iter_yaml_files(path: Path):
+    if path.is_file() and path.suffix.lower() in EXTENSIONS:
+        yield path
+    elif path.is_dir():
+        for item in sorted(path.rglob("*")):
+            if item.is_file() and item.suffix.lower() in EXTENSIONS:
+                yield item
+
+
+def main(argv: list[str]) -> int:
+    if not argv:
         print("Usage: count_yaml_lines.py <file-or-directory> [...]")
-        return 2
+        return 1
 
-    total = 0
     rows: list[tuple[str, int]] = []
-    for file_path in iter_files(sys.argv[1:]):
-        line_count = count_effective_lines(file_path)
-        rows.append((str(file_path), line_count))
-        total += line_count
+    for raw in argv:
+        path = Path(raw)
+        for file in iter_yaml_files(path):
+            rows.append((str(file), count_lines(file)))
 
-    width = max((len(name) for name, _ in rows), default=10)
-    for name, line_count in rows:
-        print(f"{name:<{width}}  {line_count:>5}")
+    if not rows:
+        print("No YAML files found")
+        return 1
+
+    width = max(len(name) for name, _ in rows)
+    total = 0
+    for name, count in rows:
+        total += count
+        print(f"{name:<{width}}  {count:>6}")
     print("-" * (width + 8))
-    print(f"{'TOTAL':<{width}}  {total:>5}")
+    print(f"{'TOTAL':<{width}}  {total:>6}")
     return 0
 
 
 if __name__ == "__main__":
-    raise SystemExit(main())
+    raise SystemExit(main(sys.argv[1:]))

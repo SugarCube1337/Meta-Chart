@@ -1,0 +1,39 @@
+{{- $root := . -}}
+{{- $defaults := deepCopy (.Values.defaults | default dict) -}}
+{{- range $serviceName, $serviceRaw := .Values.services }}
+{{- $profileName := default "api" $serviceRaw.profile -}}
+{{- $profile := deepCopy (index $.Values.profiles $profileName | default dict) -}}
+{{- $service := mergeOverwrite (deepCopy $defaults) $profile (deepCopy $serviceRaw) -}}
+{{- if and $service.enabled $service.service.enabled $service.ingress.enabled }}
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "meta-chart.serviceName" (dict "root" $root "serviceName" $serviceName) }}
+  namespace: {{ include "meta-chart.namespace" $root }}
+  labels:
+{{ include "meta-chart.serviceLabels" (dict "root" $root "serviceName" $serviceName) | nindent 4 }}
+  annotations:
+{{- with $root.Values.global.commonAnnotations }}
+{{ toYaml . | nindent 4 }}
+{{- end }}
+{{- with $service.ingress.annotations }}
+{{ toYaml . | nindent 4 }}
+{{- end }}
+spec:
+  {{- if $service.ingress.className }}
+  ingressClassName: {{ $service.ingress.className }}
+  {{- end }}
+  rules:
+    - host: {{ required (printf "ingress.host is required for service %s when ingress.enabled=true" $serviceName) $service.ingress.host | quote }}
+      http:
+        paths:
+          - path: {{ $service.ingress.path | default "/" }}
+            pathType: {{ $service.ingress.pathType | default "Prefix" }}
+            backend:
+              service:
+                name: {{ include "meta-chart.serviceName" (dict "root" $root "serviceName" $serviceName) }}
+                port:
+                  number: {{ $service.service.port | default 80 }}
+{{- end }}
+{{- end }}

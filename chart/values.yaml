@@ -1,0 +1,242 @@
+global:
+  environment: dev
+  namespace: demo-app
+  imageRegistry: registry.example.local/vkr-platform
+  imageTag: latest
+  imagePullPolicy: IfNotPresent
+  imagePullSecrets: []
+  commonLabels:
+    vkr.itmo/project: configuration-metachart
+  commonAnnotations:
+    config-management/source: helm-metachart-v3
+  podAnnotations: {}
+
+serviceDiscovery:
+  enabled: true
+  domainSuffix: svc.cluster.local
+
+networkPolicy:
+  enabled: true
+  deriveFromDependencies: true
+
+monitoring:
+  enabled: true
+  prometheus:
+    scrape: true
+    path: /metrics
+    port: 8080
+    serviceMonitor:
+      enabled: false
+      interval: 30s
+      labels: {}
+
+serviceMesh:
+  enabled: false
+  provider: istio
+  gateway:
+    enabled: false
+    name: public-gateway
+    hosts:
+      - "*"
+    selector:
+      istio: ingressgateway
+
+defaults:
+  replicaCount: 1
+  containerPort: 8080
+  serviceAccount:
+    create: false
+    name: ""
+  service:
+    enabled: true
+    type: ClusterIP
+    port: 80
+    annotations: {}
+  ingress:
+    enabled: false
+    className: nginx
+    host: ""
+    path: /
+    pathType: Prefix
+    annotations: {}
+  env: {}
+  config: {}
+  secrets: {}
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+  probes:
+    liveness:
+      enabled: true
+      path: /health
+      initialDelaySeconds: 15
+      periodSeconds: 10
+      timeoutSeconds: 2
+      failureThreshold: 3
+    readiness:
+      enabled: true
+      path: /ready
+      initialDelaySeconds: 5
+      periodSeconds: 10
+      timeoutSeconds: 2
+      failureThreshold: 3
+  autoscaling:
+    enabled: false
+    minReplicas: 1
+    maxReplicas: 3
+    targetCPUUtilizationPercentage: 80
+  podSecurityContext:
+    runAsNonRoot: true
+    seccompProfile:
+      type: RuntimeDefault
+  securityContext:
+    allowPrivilegeEscalation: false
+    readOnlyRootFilesystem: false
+    capabilities:
+      drop:
+        - ALL
+  networkPolicy:
+    enabled: true
+    ingress:
+      from: []
+  monitoring:
+    enabled: true
+  serviceMesh:
+    enabled: false
+    virtualService:
+      enabled: false
+      hosts: []
+      gateways: []
+      pathPrefix: /
+    destinationRule:
+      enabled: false
+      trafficPolicy: {}
+
+profiles:
+  web:
+    replicaCount: 1
+    containerPort: 3000
+    service:
+      enabled: true
+      port: 80
+    ingress:
+      enabled: true
+      path: /
+      pathType: Prefix
+    probes:
+      liveness:
+        path: /health
+      readiness:
+        path: /ready
+  api:
+    replicaCount: 1
+    containerPort: 8080
+    service:
+      enabled: true
+      port: 80
+    ingress:
+      enabled: false
+    probes:
+      liveness:
+        path: /health
+      readiness:
+        path: /ready
+  worker:
+    replicaCount: 1
+    containerPort: 8080
+    service:
+      enabled: false
+    ingress:
+      enabled: false
+    probes:
+      liveness:
+        enabled: false
+      readiness:
+        enabled: false
+    monitoring:
+      enabled: false
+
+services:
+  frontend:
+    enabled: true
+    profile: web
+    image:
+      repository: frontend
+    ingress:
+      host: frontend.local
+    env:
+      APP_MODE: frontend
+      API_BASE_PATH: /api
+    dependencies:
+      apiGateway:
+        service: apiGateway
+        envName: API_GATEWAY_URL
+        protocol: http
+        port: 80
+
+  apiGateway:
+    enabled: true
+    profile: api
+    image:
+      repository: api-gateway
+    ingress:
+      enabled: true
+      host: api.local
+      path: /
+    env:
+      APP_MODE: api-gateway
+    dependencies:
+      userService:
+        service: userService
+        envName: USER_SERVICE_URL
+        protocol: http
+        port: 80
+      orderService:
+        service: orderService
+        envName: ORDER_SERVICE_URL
+        protocol: http
+        port: 80
+    serviceMesh:
+      enabled: false
+      virtualService:
+        enabled: false
+        hosts:
+          - api.local
+        pathPrefix: /
+      destinationRule:
+        enabled: false
+
+  userService:
+    enabled: true
+    profile: api
+    image:
+      repository: user-service
+    env:
+      APP_MODE: user-service
+    config:
+      USERS_STORAGE_MODE: memory
+    secrets:
+      JWT_SECRET: change-me
+
+  orderService:
+    enabled: true
+    profile: api
+    image:
+      repository: order-service
+    env:
+      APP_MODE: order-service
+    config:
+      ORDERS_STORAGE_MODE: memory
+
+  notificationWorker:
+    enabled: true
+    profile: worker
+    image:
+      repository: notification-worker
+    env:
+      APP_MODE: notification-worker
+      QUEUE_NAME: notifications

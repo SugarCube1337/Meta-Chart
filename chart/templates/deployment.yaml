@@ -1,0 +1,132 @@
+{{- $root := . -}}
+{{- $defaults := deepCopy (.Values.defaults | default dict) -}}
+{{- range $serviceName, $serviceRaw := .Values.services }}
+{{- $profileName := default "api" $serviceRaw.profile -}}
+{{- $profile := deepCopy (index $.Values.profiles $profileName | default dict) -}}
+{{- $service := mergeOverwrite (deepCopy $defaults) $profile (deepCopy $serviceRaw) -}}
+{{- if $service.enabled }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "meta-chart.serviceName" (dict "root" $root "serviceName" $serviceName) }}
+  namespace: {{ include "meta-chart.namespace" $root }}
+  labels:
+{{ include "meta-chart.serviceLabels" (dict "root" $root "serviceName" $serviceName) | nindent 4 }}
+  annotations:
+{{- with $root.Values.global.commonAnnotations }}
+{{ toYaml . | nindent 4 }}
+{{- end }}
+spec:
+  {{- if not $service.autoscaling.enabled }}
+  replicas: {{ $service.replicaCount | default 1 }}
+  {{- end }}
+  selector:
+    matchLabels:
+{{ include "meta-chart.selectorLabels" (dict "root" $root "serviceName" $serviceName) | nindent 6 }}
+  template:
+    metadata:
+      labels:
+{{ include "meta-chart.serviceLabels" (dict "root" $root "serviceName" $serviceName) | nindent 8 }}
+      annotations:
+        checksum/config: {{ $service.config | toJson | sha256sum }}
+        checksum/secrets: {{ $service.secrets | toJson | sha256sum }}
+        {{- with $root.Values.global.podAnnotations }}
+{{ toYaml . | nindent 8 }}
+        {{- end }}
+        {{- with $service.podAnnotations }}
+{{ toYaml . | nindent 8 }}
+        {{- end }}
+        {{- if and $root.Values.monitoring.enabled $root.Values.monitoring.prometheus.scrape $service.monitoring.enabled }}
+        prometheus.io/scrape: "true"
+        prometheus.io/path: {{ $root.Values.monitoring.prometheus.path | quote }}
+        prometheus.io/port: {{ $root.Values.monitoring.prometheus.port | quote }}
+        {{- end }}
+    spec:
+      {{- with $root.Values.global.imagePullSecrets }}
+      imagePullSecrets:
+{{ toYaml . | nindent 8 }}
+      {{- end }}
+      {{- if $service.serviceAccount.create }}
+      serviceAccountName: {{ default (include "meta-chart.serviceName" (dict "root" $root "serviceName" $serviceName)) $service.serviceAccount.name }}
+      {{- else if $service.serviceAccount.name }}
+      serviceAccountName: {{ $service.serviceAccount.name }}
+      {{- end }}
+      {{- with $service.podSecurityContext }}
+      securityContext:
+{{ toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: {{ $serviceName | kebabcase }}
+          image: {{ include "meta-chart.image" (dict "root" $root "service" $service) | quote }}
+          imagePullPolicy: {{ default $root.Values.global.imagePullPolicy $service.image.pullPolicy }}
+          {{- with $service.command }}
+          command:
+{{ toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with $service.args }}
+          args:
+{{ toYaml . | nindent 12 }}
+          {{- end }}
+          ports:
+            - name: http
+              containerPort: {{ $service.containerPort }}
+              protocol: TCP
+          env:
+            - name: SERVICE_NAME
+              value: {{ $serviceName | quote }}
+            - name: SERVICE_PROFILE
+              value: {{ $profileName | quote }}
+            - name: APP_ENVIRONMENT
+              value: {{ $root.Values.global.environment | quote }}
+            {{- range $key, $value := $service.env }}
+            - name: {{ $key }}
+              value: {{ $value | quote }}
+            {{- end }}
+            {{- if and $root.Values.serviceDiscovery.enabled $service.dependencies }}
+            {{- range $depKey, $dep := $service.dependencies }}
+            - name: {{ $dep.envName | quote }}
+              value: {{ printf "%s://%s:%v" (default "http" $dep.protocol) (include "meta-chart.serviceDnsName" (dict "root" $root "serviceName" (default $depKey $dep.service))) (default 80 $dep.port) | quote }}
+            {{- end }}
+            {{- end }}
+          {{- if or $service.config $service.secrets }}
+          envFrom:
+            {{- if $service.config }}
+            - configMapRef:
+                name: {{ include "meta-chart.configMapName" (dict "root" $root "serviceName" $serviceName) }}
+            {{- end }}
+            {{- if $service.secrets }}
+            - secretRef:
+                name: {{ include "meta-chart.secretName" (dict "root" $root "serviceName" $serviceName) }}
+            {{- end }}
+          {{- end }}
+          {{- with $service.securityContext }}
+          securityContext:
+{{ toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with $service.resources }}
+          resources:
+{{ toYaml . | nindent 12 }}
+          {{- end }}
+          {{- if $service.probes.liveness.enabled }}
+          livenessProbe:
+            httpGet:
+              path: {{ $service.probes.liveness.path | quote }}
+              port: http
+            initialDelaySeconds: {{ $service.probes.liveness.initialDelaySeconds | default 15 }}
+            periodSeconds: {{ $service.probes.liveness.periodSeconds | default 10 }}
+            timeoutSeconds: {{ $service.probes.liveness.timeoutSeconds | default 2 }}
+            failureThreshold: {{ $service.probes.liveness.failureThreshold | default 3 }}
+          {{- end }}
+          {{- if $service.probes.readiness.enabled }}
+          readinessProbe:
+            httpGet:
+              path: {{ $service.probes.readiness.path | quote }}
+              port: http
+            initialDelaySeconds: {{ $service.probes.readiness.initialDelaySeconds | default 5 }}
+            periodSeconds: {{ $service.probes.readiness.periodSeconds | default 10 }}
+            timeoutSeconds: {{ $service.probes.readiness.timeoutSeconds | default 2 }}
+            failureThreshold: {{ $service.probes.readiness.failureThreshold | default 3 }}
+          {{- end }}
+{{- end }}
+{{- end }}

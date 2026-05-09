@@ -1,0 +1,21 @@
+{{- $root := . -}}
+{{- $defaults := deepCopy (.Values.defaults | default dict) -}}
+{{- range $serviceName, $serviceRaw := .Values.services }}
+{{- $profileName := default "api" $serviceRaw.profile -}}
+{{- $profile := deepCopy (index $.Values.profiles $profileName | default dict) -}}
+{{- $service := mergeOverwrite (deepCopy $defaults) $profile (deepCopy $serviceRaw) -}}
+{{- if and $service.enabled $service.config }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "meta-chart.configMapName" (dict "root" $root "serviceName" $serviceName) }}
+  namespace: {{ include "meta-chart.namespace" $root }}
+  labels:
+{{ include "meta-chart.serviceLabels" (dict "root" $root "serviceName" $serviceName) | nindent 4 }}
+data:
+{{- range $key, $value := $service.config }}
+  {{ $key }}: {{ $value | quote }}
+{{- end }}
+{{- end }}
+{{- end }}

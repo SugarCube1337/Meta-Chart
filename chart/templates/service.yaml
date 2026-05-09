@@ -1,0 +1,33 @@
+{{- $root := . -}}
+{{- $defaults := deepCopy (.Values.defaults | default dict) -}}
+{{- range $serviceName, $serviceRaw := .Values.services }}
+{{- $profileName := default "api" $serviceRaw.profile -}}
+{{- $profile := deepCopy (index $.Values.profiles $profileName | default dict) -}}
+{{- $service := mergeOverwrite (deepCopy $defaults) $profile (deepCopy $serviceRaw) -}}
+{{- if and $service.enabled $service.service.enabled }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "meta-chart.serviceName" (dict "root" $root "serviceName" $serviceName) }}
+  namespace: {{ include "meta-chart.namespace" $root }}
+  labels:
+{{ include "meta-chart.serviceLabels" (dict "root" $root "serviceName" $serviceName) | nindent 4 }}
+  annotations:
+{{- with $root.Values.global.commonAnnotations }}
+{{ toYaml . | nindent 4 }}
+{{- end }}
+{{- with $service.service.annotations }}
+{{ toYaml . | nindent 4 }}
+{{- end }}
+spec:
+  type: {{ $service.service.type | default "ClusterIP" }}
+  ports:
+    - name: http
+      port: {{ $service.service.port | default 80 }}
+      targetPort: {{ $service.service.targetPort | default $service.containerPort }}
+      protocol: TCP
+  selector:
+{{ include "meta-chart.selectorLabels" (dict "root" $root "serviceName" $serviceName) | nindent 4 }}
+{{- end }}
+{{- end }}

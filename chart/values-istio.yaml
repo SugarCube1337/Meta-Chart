@@ -1,0 +1,25 @@
+serviceMesh:
+  enabled: true
+  provider: istio
+  gateway:
+    enabled: true
+    name: public-gateway
+    hosts:
+      - api.mesh.local
+    selector:
+      istio: ingressgateway
+
+services:
+  apiGateway:
+    serviceMesh:
+      enabled: true
+      virtualService:
+        enabled: true
+        hosts:
+          - api.mesh.local
+        pathPrefix: /
+      destinationRule:
+        enabled: true
+        trafficPolicy:
+          loadBalancer:
+            simple: ROUND_ROBIN

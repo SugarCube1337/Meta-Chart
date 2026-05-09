@@ -1,0 +1,14 @@
+services:
+  billingService:
+    enabled: true
+    profile: api
+    image:
+      repository: billing-service
+    env:
+      APP_MODE: billing-service
+    dependencies:
+      userService:
+        service: userService
+        envName: USER_SERVICE_URL
+        protocol: http
+        port: 80

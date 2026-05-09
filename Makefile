@@ -1,21 +1,30 @@
+CHART_DIR := chart
+RELEASE := demo
+
+.PHONY: lint template-dev template-stage template-prod template-istio render-all count-lines
+
 lint:
-	helm lint .
+	helm lint $(CHART_DIR)
 
-render-dev:
-	helm template demo . -f values-dev.yaml
+template-dev:
+	helm template $(RELEASE) $(CHART_DIR) -f $(CHART_DIR)/values-dev.yaml
 
-render-stage:
-	helm template demo . -f values-stage.yaml
+template-stage:
+	helm template $(RELEASE) $(CHART_DIR) -f $(CHART_DIR)/values-stage.yaml
 
-render-prod:
-	helm template demo . -f values-prod.yaml
+template-prod:
+	helm template $(RELEASE) $(CHART_DIR) -f $(CHART_DIR)/values-prod.yaml
+
+template-istio:
+	helm template $(RELEASE) $(CHART_DIR) -f $(CHART_DIR)/values-dev.yaml -f $(CHART_DIR)/values-istio.yaml
 
 render-all:
-	helm template demo . -f values-dev.yaml > examples/rendered-dev.yaml
-	helm template demo . -f values-stage.yaml > examples/rendered-stage.yaml
-	helm template demo . -f values-prod.yaml > examples/rendered-prod.yaml
+	mkdir -p examples
+	helm template $(RELEASE) $(CHART_DIR) -f $(CHART_DIR)/values-dev.yaml > examples/rendered-dev.yaml
+	helm template $(RELEASE) $(CHART_DIR) -f $(CHART_DIR)/values-stage.yaml > examples/rendered-stage.yaml
+	helm template $(RELEASE) $(CHART_DIR) -f $(CHART_DIR)/values-prod.yaml > examples/rendered-prod.yaml
+	helm template $(RELEASE) $(CHART_DIR) -f $(CHART_DIR)/values-dev.yaml -f $(CHART_DIR)/values-istio.yaml > examples/rendered-istio.yaml
 
 count-lines:
-	python scripts/count_yaml_lines.py baseline/manual-k8s
-	python scripts/count_yaml_lines.py values.yaml values-dev.yaml values-stage.yaml values-prod.yaml
-	python scripts/count_yaml_lines.py templates
+	python scripts/count_yaml_lines.py $(CHART_DIR)/values.yaml $(CHART_DIR)/values-dev.yaml $(CHART_DIR)/values-stage.yaml $(CHART_DIR)/values-prod.yaml
+	python scripts/count_yaml_lines.py $(CHART_DIR)/templates
