@@ -1,33 +1,33 @@
 {{- $root := . -}}
-{{- $defaults := deepCopy (.Values.defaults | default dict) -}}
-{{- range $serviceName, $serviceRaw := .Values.services }}
-{{- $profileName := default "api" $serviceRaw.profile -}}
-{{- $profile := deepCopy (index $.Values.profiles $profileName | default dict) -}}
-{{- $service := mergeOverwrite (deepCopy $defaults) $profile (deepCopy $serviceRaw) -}}
-{{- if and $service.enabled $service.service.enabled }}
+{{- $defaults := .Values.defaults | default dict -}}
+{{- $profiles := .Values.profiles | default dict -}}
+{{- range $serviceName, $serviceConfig := .Values.services }}
+{{- $profileName := default "api" $serviceConfig.profile -}}
+{{- $profile := (get $profiles $profileName) | default dict -}}
+{{- $service := mergeOverwrite (deepCopy $defaults) (deepCopy $profile) (deepCopy $serviceConfig) -}}
+{{- if and ($service.enabled | default true) $service.service.enabled }}
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ include "meta-chart.serviceName" (dict "root" $root "serviceName" $serviceName) }}
-  namespace: {{ include "meta-chart.namespace" $root }}
+  name: {{ include "vkr.serviceName" (dict "root" $root "name" $serviceName) }}
+  namespace: {{ include "vkr.namespace" $root }}
   labels:
-{{ include "meta-chart.serviceLabels" (dict "root" $root "serviceName" $serviceName) | nindent 4 }}
+{{ include "vkr.labels" (dict "root" $root "name" $serviceName) | indent 4 }}
   annotations:
-{{- with $root.Values.global.commonAnnotations }}
-{{ toYaml . | nindent 4 }}
-{{- end }}
-{{- with $service.service.annotations }}
-{{ toYaml . | nindent 4 }}
-{{- end }}
+    {{- if and $root.Values.monitoring.enabled $root.Values.monitoring.prometheus.scrape $service.monitoring.enabled $service.monitoring.scrape }}
+    prometheus.io/scrape: "true"
+    prometheus.io/path: {{ $service.monitoring.path | quote }}
+    prometheus.io/port: {{ $service.monitoring.port | quote }}
+    {{- end }}
 spec:
-  type: {{ $service.service.type | default "ClusterIP" }}
+  type: {{ $service.service.type }}
+  selector:
+{{ include "vkr.selectorLabels" (dict "root" $root "name" $serviceName) | indent 4 }}
   ports:
     - name: http
-      port: {{ $service.service.port | default 80 }}
-      targetPort: {{ $service.service.targetPort | default $service.containerPort }}
+      port: {{ $service.service.port }}
+      targetPort: http
       protocol: TCP
-  selector:
-{{ include "meta-chart.selectorLabels" (dict "root" $root "serviceName" $serviceName) | nindent 4 }}
 {{- end }}
 {{- end }}

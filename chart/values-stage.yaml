@@ -1,7 +1,6 @@
 global:
   environment: stage
-  namespace: demo-stage
-  imageTag: stage
+  namespace: demo-app-stage
 
 services:
   frontend:
@@ -16,3 +15,5 @@ services:
     replicaCount: 2
   orderService:
     replicaCount: 2
+  notificationWorker:
+    replicaCount: 1

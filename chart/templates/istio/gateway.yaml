@@ -1,20 +1,20 @@
 {{- if and .Values.serviceMesh.enabled (eq .Values.serviceMesh.provider "istio") .Values.serviceMesh.gateway.enabled }}
----
 apiVersion: networking.istio.io/v1beta1
 kind: Gateway
 metadata:
-  name: {{ printf "%s-%s" .Release.Name .Values.serviceMesh.gateway.name | trunc 63 | trimSuffix "-" }}
-  namespace: {{ include "meta-chart.namespace" . }}
+  name: {{ .Values.serviceMesh.gateway.name }}
+  namespace: {{ default (include "vkr.namespace" .) .Values.serviceMesh.gateway.namespace }}
   labels:
-{{ include "meta-chart.serviceLabels" (dict "root" . "serviceName" "istio-gateway") | nindent 4 }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
 spec:
   selector:
-{{ toYaml .Values.serviceMesh.gateway.selector | nindent 4 }}
+{{ toYaml .Values.serviceMesh.gateway.selector | indent 4 }}
   servers:
     - port:
-        number: 80
+        number: {{ .Values.serviceMesh.gateway.port }}
         name: http
         protocol: HTTP
       hosts:
-{{ toYaml .Values.serviceMesh.gateway.hosts | nindent 8 }}
+{{ toYaml .Values.serviceMesh.gateway.hosts | indent 8 }}
 {{- end }}

@@ -1,80 +1,75 @@
-{{/*
-Common helper templates for the Helm metachart.
-*/}}
+{{/* Convert service key to kebab-case. */}}
+{{- define "vkr.kebab" -}}
+{{- regexReplaceAll "([a-z0-9])([A-Z])" . "${1}-${2}" | lower | replace "_" "-" -}}
+{{- end -}}
 
-{{- define "meta-chart.name" -}}
+{{- define "vkr.chartName" -}}
 {{- default .Chart.Name .Values.global.nameOverride | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
 
-{{- define "meta-chart.fullname" -}}
+{{- define "vkr.fullname" -}}
 {{- if .Values.global.fullnameOverride -}}
 {{- .Values.global.fullnameOverride | trunc 63 | trimSuffix "-" -}}
 {{- else -}}
-{{- printf "%s-%s" .Release.Name (include "meta-chart.name" .) | trunc 63 | trimSuffix "-" -}}
+{{- printf "%s-%s" .Release.Name (include "vkr.chartName" .) | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
 {{- end -}}
 
-{{- define "meta-chart.chart" -}}
-{{- printf "%s-%s" .Chart.Name .Chart.Version | replace "+" "_" -}}
+{{- define "vkr.serviceName" -}}
+{{- $root := .root -}}
+{{- $name := include "vkr.kebab" .name -}}
+{{- printf "%s-%s" $root.Release.Name $name | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
 
-{{- define "meta-chart.namespace" -}}
+{{- define "vkr.namespace" -}}
 {{- default .Release.Namespace .Values.global.namespace -}}
 {{- end -}}
 
-{{- define "meta-chart.serviceName" -}}
-{{- printf "%s-%s" .root.Release.Name .serviceName | kebabcase | trunc 63 | trimSuffix "-" -}}
-{{- end -}}
-
-{{- define "meta-chart.configMapName" -}}
-{{- printf "%s-config" (include "meta-chart.serviceName" .) | trunc 63 | trimSuffix "-" -}}
-{{- end -}}
-
-{{- define "meta-chart.secretName" -}}
-{{- printf "%s-secret" (include "meta-chart.serviceName" .) | trunc 63 | trimSuffix "-" -}}
-{{- end -}}
-
-{{- define "meta-chart.selectorLabels" -}}
-app.kubernetes.io/instance: {{ .root.Release.Name | quote }}
-app.kubernetes.io/component: {{ .serviceName | kebabcase | quote }}
-{{- end -}}
-
-{{- define "meta-chart.serviceLabels" -}}
-app.kubernetes.io/name: {{ include "meta-chart.name" .root | quote }}
-app.kubernetes.io/instance: {{ .root.Release.Name | quote }}
-app.kubernetes.io/managed-by: {{ .root.Release.Service | quote }}
-app.kubernetes.io/component: {{ .serviceName | kebabcase | quote }}
-app.kubernetes.io/part-of: {{ include "meta-chart.name" .root | quote }}
-helm.sh/chart: {{ include "meta-chart.chart" .root | quote }}
+{{- define "vkr.labels" -}}
+helm.sh/chart: {{ .root.Chart.Name }}-{{ .root.Chart.Version | replace "+" "_" }}
+app.kubernetes.io/name: {{ include "vkr.kebab" .name }}
+app.kubernetes.io/instance: {{ .root.Release.Name }}
+app.kubernetes.io/managed-by: {{ .root.Release.Service }}
+app.kubernetes.io/part-of: {{ include "vkr.chartName" .root }}
+app.kubernetes.io/component: {{ include "vkr.kebab" .name }}
+app.kubernetes.io/version: {{ .root.Chart.AppVersion | quote }}
 {{- with .root.Values.global.commonLabels }}
 {{ toYaml . }}
+{{- end }}
+{{- end -}}
+
+{{- define "vkr.selectorLabels" -}}
+app.kubernetes.io/name: {{ include "vkr.kebab" .name }}
+app.kubernetes.io/instance: {{ .root.Release.Name }}
+{{- end -}}
+
+{{- define "vkr.serviceAccountName" -}}
+{{- if .root.Values.serviceAccount.create -}}
+{{- include "vkr.serviceName" . -}}
+{{- else -}}
+{{- default "default" .root.Values.serviceAccount.name -}}
 {{- end -}}
 {{- end -}}
 
-{{- define "meta-chart.image" -}}
+{{- define "vkr.serviceImage" -}}
 {{- $root := .root -}}
 {{- $service := .service -}}
-{{- $repo := required "service.image.repository is required" $service.image.repository -}}
-{{- $tag := default (default $root.Chart.AppVersion $root.Values.global.imageTag) $service.image.tag -}}
-{{- if $root.Values.global.imageRegistry -}}
-{{- printf "%s/%s:%s" ($root.Values.global.imageRegistry | trimSuffix "/") $repo $tag -}}
+{{- $registry := default "" $root.Values.global.imageRegistry -}}
+{{- $repository := required "service image.repository is required" $service.image.repository -}}
+{{- $tag := default (default "latest" $root.Values.global.imageTag) $service.image.tag -}}
+{{- if $registry -}}
+{{- printf "%s/%s:%s" (trimSuffix "/" $registry) $repository $tag -}}
 {{- else -}}
-{{- printf "%s:%s" $repo $tag -}}
+{{- printf "%s:%s" $repository $tag -}}
 {{- end -}}
 {{- end -}}
 
-{{- define "meta-chart.serviceDnsName" -}}
+{{- define "vkr.dependencyUrl" -}}
 {{- $root := .root -}}
-{{- $serviceName := .serviceName -}}
-{{- $k8sName := include "meta-chart.serviceName" (dict "root" $root "serviceName" $serviceName) -}}
-{{- $namespace := include "meta-chart.namespace" $root -}}
-{{- $domainSuffix := default "svc.cluster.local" $root.Values.serviceDiscovery.domainSuffix -}}
-{{- printf "%s.%s.%s" $k8sName $namespace $domainSuffix -}}
-{{- end -}}
-
-{{- define "meta-chart.effectiveService" -}}
-{{/*
-This helper is intentionally not used for rendering because Helm helpers return strings.
-Effective service maps are computed inside every template through mergeOverwrite.
-*/}}
+{{- $dep := .dep -}}
+{{- $protocol := default "http" $dep.protocol -}}
+{{- $port := default 80 $dep.port -}}
+{{- $target := include "vkr.serviceName" (dict "root" $root "name" $dep.service) -}}
+{{- $namespace := include "vkr.namespace" $root -}}
+{{- printf "%s://%s.%s.svc.cluster.local:%v" $protocol $target $namespace $port -}}
 {{- end -}}

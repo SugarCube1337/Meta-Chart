@@ -1,30 +1,81 @@
 stages:
   - validate
+  - build
+  - push
   - render
+  - deploy
 
 variables:
-  HELM_EXPERIMENTAL_OCI: "1"
+  DOCKER_TLS_CERTDIR: ""
+  IMAGE_TAG: "$CI_COMMIT_SHORT_SHA"
 
 helm_lint:
-  image: alpine/helm:3.14.4
   stage: validate
+  image: alpine/helm:3.15.4
   script:
-    - helm lint chart
+    - helm lint ./chart
+    - helm template demo ./chart -f ./chart/values-dev.yaml
+    - helm template demo ./chart -f ./chart/values-stage.yaml
+    - helm template demo ./chart -f ./chart/values-prod.yaml
+    - helm template demo ./chart -f ./chart/values-dev.yaml -f ./chart/values-istio.yaml
 
-render_dev:
-  image: alpine/helm:3.14.4
-  stage: render
+schema_negative_test:
+  stage: validate
+  image: alpine/helm:3.15.4
   script:
-    - helm template demo chart -f chart/values-dev.yaml > rendered-dev.yaml
-  artifacts:
-    paths:
-      - rendered-dev.yaml
+    - '! helm template demo ./chart -f ./chart/values-dev.yaml -f ./experiments/invalid-values/bad-container-port.yaml'
 
-render_prod:
-  image: alpine/helm:3.14.4
-  stage: render
+build_images:
+  stage: build
+  image: docker:24.0.5-cli
+  services:
+    - docker:24.0.5-dind
+  before_script:
+    - echo "$CI_REGISTRY_PASSWORD" | docker login "$CI_REGISTRY" -u "$CI_REGISTRY_USER" --password-stdin
   script:
-    - helm template demo chart -f chart/values-prod.yaml > rendered-prod.yaml
-  artifacts:
-    paths:
-      - rendered-prod.yaml
+    - docker build -t "$CI_REGISTRY_IMAGE/frontend:$IMAGE_TAG" services/frontend
+    - docker build -t "$CI_REGISTRY_IMAGE/api-gateway:$IMAGE_TAG" services/api-gateway
+    - docker build -t "$CI_REGISTRY_IMAGE/user-service:$IMAGE_TAG" services/user-service
+    - docker build -t "$CI_REGISTRY_IMAGE/order-service:$IMAGE_TAG" services/order-service
+    - docker build -t "$CI_REGISTRY_IMAGE/notification-worker:$IMAGE_TAG" services/notification-worker
+
+push_images:
+  stage: push
+  image: docker:24.0.5-cli
+  services:
+    - docker:24.0.5-dind
+  before_script:
+    - echo "$CI_REGISTRY_PASSWORD" | docker login "$CI_REGISTRY" -u "$CI_REGISTRY_USER" --password-stdin
+  script:
+    - docker build -t "$CI_REGISTRY_IMAGE/frontend:$IMAGE_TAG" services/frontend && docker push "$CI_REGISTRY_IMAGE/frontend:$IMAGE_TAG"
+    - docker build -t "$CI_REGISTRY_IMAGE/api-gateway:$IMAGE_TAG" services/api-gateway && docker push "$CI_REGISTRY_IMAGE/api-gateway:$IMAGE_TAG"
+    - docker build -t "$CI_REGISTRY_IMAGE/user-service:$IMAGE_TAG" services/user-service && docker push "$CI_REGISTRY_IMAGE/user-service:$IMAGE_TAG"
+    - docker build -t "$CI_REGISTRY_IMAGE/order-service:$IMAGE_TAG" services/order-service && docker push "$CI_REGISTRY_IMAGE/order-service:$IMAGE_TAG"
+    - docker build -t "$CI_REGISTRY_IMAGE/notification-worker:$IMAGE_TAG" services/notification-worker && docker push "$CI_REGISTRY_IMAGE/notification-worker:$IMAGE_TAG"
+
+render_with_registry:
+  stage: render
+  image: alpine/helm:3.15.4
+  script:
+    - >-
+      helm template demo ./chart
+      -f ./chart/values-dev.yaml
+      --set global.imageRegistry="$CI_REGISTRY_IMAGE"
+      --set global.imageTag="$IMAGE_TAG"
+
+render_add_service_experiment:
+  stage: render
+  image: alpine/helm:3.15.4
+  script:
+    - helm template demo ./chart -f ./chart/values-dev.yaml -f ./experiments/add-service/billing-service-values.yaml
+
+deploy_dev_manual:
+  stage: deploy
+  image: alpine/helm:3.15.4
+  when: manual
+  script:
+    - >-
+      helm upgrade --install demo ./chart
+      -f ./chart/values-dev.yaml
+      --set global.imageRegistry="$CI_REGISTRY_IMAGE"
+      --set global.imageTag="$IMAGE_TAG"

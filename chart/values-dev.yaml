@@ -1,18 +1,20 @@
 global:
   environment: dev
-  namespace: demo-dev
-  imageTag: dev
+  namespace: demo-app
+  imageTag: dev-local
 
 services:
   frontend:
+    replicaCount: 1
     ingress:
-      host: frontend.dev.local
+      host: frontend.local
   apiGateway:
+    replicaCount: 1
     ingress:
-      host: api.dev.local
+      host: api.local
   userService:
-    config:
-      LOG_LEVEL: debug
+    replicaCount: 1
   orderService:
-    config:
-      LOG_LEVEL: debug
+    replicaCount: 1
+  notificationWorker:
+    replicaCount: 1

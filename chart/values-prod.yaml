@@ -1,19 +1,6 @@
 global:
   environment: prod
-  namespace: demo-prod
-  imageTag: prod
-
-monitoring:
-  prometheus:
-    serviceMonitor:
-      enabled: false
-
-serviceMesh:
-  enabled: false
-  gateway:
-    enabled: false
-    hosts:
-      - api.example.com
+  namespace: demo-app-prod
 
 services:
   frontend:
@@ -25,8 +12,8 @@ services:
         cpu: 200m
         memory: 256Mi
       limits:
-        cpu: 1000m
-        memory: 1024Mi
+        cpu: 700m
+        memory: 768Mi
   apiGateway:
     replicaCount: 3
     ingress:
@@ -38,28 +25,9 @@ services:
       limits:
         cpu: 1000m
         memory: 1024Mi
-    autoscaling:
-      enabled: true
-      minReplicas: 3
-      maxReplicas: 6
-      targetCPUUtilizationPercentage: 70
   userService:
-    replicaCount: 2
-    resources:
-      requests:
-        cpu: 200m
-        memory: 256Mi
-      limits:
-        cpu: 750m
-        memory: 768Mi
+    replicaCount: 3
   orderService:
-    replicaCount: 2
-    resources:
-      requests:
-        cpu: 200m
-        memory: 256Mi
-      limits:
-        cpu: 750m
-        memory: 768Mi
+    replicaCount: 3
   notificationWorker:
     replicaCount: 2

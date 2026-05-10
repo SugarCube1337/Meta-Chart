@@ -1,30 +1,34 @@
 {{- $root := . -}}
-{{- $defaults := deepCopy (.Values.defaults | default dict) -}}
+{{- $defaults := .Values.defaults | default dict -}}
+{{- $profiles := .Values.profiles | default dict -}}
 {{- if and .Values.monitoring.enabled .Values.monitoring.prometheus.serviceMonitor.enabled }}
-{{- range $serviceName, $serviceRaw := .Values.services }}
-{{- $profileName := default "api" $serviceRaw.profile -}}
-{{- $profile := deepCopy (index $.Values.profiles $profileName | default dict) -}}
-{{- $service := mergeOverwrite (deepCopy $defaults) $profile (deepCopy $serviceRaw) -}}
-{{- if and $service.enabled $service.service.enabled $service.monitoring.enabled }}
+{{- range $serviceName, $serviceConfig := .Values.services }}
+{{- $profileName := default "api" $serviceConfig.profile -}}
+{{- $profile := (get $profiles $profileName) | default dict -}}
+{{- $service := mergeOverwrite (deepCopy $defaults) (deepCopy $profile) (deepCopy $serviceConfig) -}}
+{{- if and ($service.enabled | default true) $service.service.enabled $service.monitoring.enabled $service.monitoring.serviceMonitor.enabled }}
 ---
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
-  name: {{ include "meta-chart.serviceName" (dict "root" $root "serviceName" $serviceName) }}
-  namespace: {{ include "meta-chart.namespace" $root }}
+  name: {{ include "vkr.serviceName" (dict "root" $root "name" $serviceName) }}
+  namespace: {{ default (include "vkr.namespace" $root) $root.Values.monitoring.prometheus.serviceMonitor.namespace }}
   labels:
-{{ include "meta-chart.serviceLabels" (dict "root" $root "serviceName" $serviceName) | nindent 4 }}
+{{ include "vkr.labels" (dict "root" $root "name" $serviceName) | indent 4 }}
 {{- with $root.Values.monitoring.prometheus.serviceMonitor.labels }}
-{{ toYaml . | nindent 4 }}
+{{ toYaml . | indent 4 }}
 {{- end }}
 spec:
   selector:
     matchLabels:
-{{ include "meta-chart.selectorLabels" (dict "root" $root "serviceName" $serviceName) | nindent 6 }}
+{{ include "vkr.selectorLabels" (dict "root" $root "name" $serviceName) | indent 6 }}
+  namespaceSelector:
+    matchNames:
+      - {{ include "vkr.namespace" $root }}
   endpoints:
     - port: http
-      path: {{ $root.Values.monitoring.prometheus.path | quote }}
-      interval: {{ $root.Values.monitoring.prometheus.serviceMonitor.interval | default "30s" }}
+      path: {{ $service.monitoring.path }}
+      interval: {{ $service.monitoring.serviceMonitor.interval }}
 {{- end }}
 {{- end }}
 {{- end }}

@@ -3,23 +3,26 @@ serviceMesh:
   provider: istio
   gateway:
     enabled: true
-    name: public-gateway
     hosts:
-      - api.mesh.local
-    selector:
-      istio: ingressgateway
+      - api.local
+      - frontend.local
 
 services:
-  apiGateway:
+  frontend:
     serviceMesh:
-      enabled: true
       virtualService:
         enabled: true
         hosts:
-          - api.mesh.local
+          - frontend.local
         pathPrefix: /
       destinationRule:
         enabled: true
-        trafficPolicy:
-          loadBalancer:
-            simple: ROUND_ROBIN
+  apiGateway:
+    serviceMesh:
+      virtualService:
+        enabled: true
+        hosts:
+          - api.local
+        pathPrefix: /
+      destinationRule:
+        enabled: true

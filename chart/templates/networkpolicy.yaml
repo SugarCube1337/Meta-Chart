@@ -1,69 +1,42 @@
 {{- $root := . -}}
-{{- $defaults := deepCopy (.Values.defaults | default dict) -}}
-{{- if .Values.networkPolicy.enabled }}
-{{- range $targetName, $targetRaw := .Values.services }}
-{{- $targetProfileName := default "api" $targetRaw.profile -}}
-{{- $targetProfile := deepCopy (index $.Values.profiles $targetProfileName | default dict) -}}
-{{- $target := mergeOverwrite (deepCopy $defaults) $targetProfile (deepCopy $targetRaw) -}}
-{{- if and $target.enabled $target.networkPolicy.enabled }}
-{{- $hasSources := false -}}
-{{- range $sourceName, $sourceRaw := $.Values.services }}
-{{- $sourceProfileName := default "api" $sourceRaw.profile -}}
-{{- $sourceProfile := deepCopy (index $.Values.profiles $sourceProfileName | default dict) -}}
-{{- $source := mergeOverwrite (deepCopy $defaults) $sourceProfile (deepCopy $sourceRaw) -}}
-{{- if and $source.enabled $source.dependencies }}
-{{- range $depKey, $dep := $source.dependencies }}
-{{- if eq (default $depKey $dep.service) $targetName }}
-{{- $hasSources = true -}}
-{{- end }}
-{{- end }}
-{{- end }}
-{{- end }}
-{{- if or $target.networkPolicy.ingress.from $target.ingress.enabled }}{{- $hasSources = true -}}{{- end }}
+{{- $defaults := .Values.defaults | default dict -}}
+{{- $profiles := .Values.profiles | default dict -}}
+{{- range $serviceName, $serviceConfig := .Values.services }}
+{{- $profileName := default "api" $serviceConfig.profile -}}
+{{- $profile := (get $profiles $profileName) | default dict -}}
+{{- $service := mergeOverwrite (deepCopy $defaults) (deepCopy $profile) (deepCopy $serviceConfig) -}}
+{{- if and ($service.enabled | default true) $service.networkPolicy.enabled }}
 ---
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
-  name: {{ include "meta-chart.serviceName" (dict "root" $root "serviceName" $targetName) }}
-  namespace: {{ include "meta-chart.namespace" $root }}
+  name: {{ include "vkr.serviceName" (dict "root" $root "name" $serviceName) }}
+  namespace: {{ include "vkr.namespace" $root }}
   labels:
-{{ include "meta-chart.serviceLabels" (dict "root" $root "serviceName" $targetName) | nindent 4 }}
+{{ include "vkr.labels" (dict "root" $root "name" $serviceName) | indent 4 }}
 spec:
   podSelector:
     matchLabels:
-{{ include "meta-chart.selectorLabels" (dict "root" $root "serviceName" $targetName) | nindent 6 }}
+{{ include "vkr.selectorLabels" (dict "root" $root "name" $serviceName) | indent 6 }}
   policyTypes:
     - Ingress
-  {{- if $hasSources }}
+    - Egress
   ingress:
-    {{- if $target.ingress.enabled }}
+    {{- if $service.networkPolicy.ingress.from }}
+    {{- range $from := $service.networkPolicy.ingress.from }}
+    - from:
+        - podSelector:
+            matchLabels:
+{{ include "vkr.selectorLabels" (dict "root" $root "name" $from) | indent 14 }}
+    {{- end }}
+    {{- else }}
     - {}
     {{- end }}
-    {{- if or $target.networkPolicy.ingress.from (and $root.Values.networkPolicy.deriveFromDependencies (not $target.ingress.enabled)) }}
-    - from:
-      {{- range $sourceName, $sourceRaw := $.Values.services }}
-      {{- $sourceProfileName := default "api" $sourceRaw.profile -}}
-      {{- $sourceProfile := deepCopy (index $.Values.profiles $sourceProfileName | default dict) -}}
-      {{- $source := mergeOverwrite (deepCopy $defaults) $sourceProfile (deepCopy $sourceRaw) -}}
-      {{- if and $source.enabled $source.dependencies }}
-      {{- range $depKey, $dep := $source.dependencies }}
-      {{- if eq (default $depKey $dep.service) $targetName }}
-        - podSelector:
-            matchLabels:
-{{ include "meta-chart.selectorLabels" (dict "root" $root "serviceName" $sourceName) | nindent 14 }}
-      {{- end }}
-      {{- end }}
-      {{- end }}
-      {{- end }}
-      {{- range $explicitSource := $target.networkPolicy.ingress.from }}
-        - podSelector:
-            matchLabels:
-{{ include "meta-chart.selectorLabels" (dict "root" $root "serviceName" $explicitSource) | nindent 14 }}
-      {{- end }}
+  egress:
+    {{- if $service.networkPolicy.egress.enabled }}
+    - {}
+    {{- else }}
+    []
     {{- end }}
-  {{- else }}
-  ingress: []
-  {{- end }}
-{{- end }}
 {{- end }}
 {{- end }}

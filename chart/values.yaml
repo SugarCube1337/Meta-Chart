@@ -1,67 +1,42 @@
 global:
   environment: dev
   namespace: demo-app
-  imageRegistry: registry.example.local/vkr-platform
-  imageTag: latest
+  imageRegistry: ""
+  imageTag: dev-local
   imagePullPolicy: IfNotPresent
-  imagePullSecrets: []
-  commonLabels:
-    vkr.itmo/project: configuration-metachart
-  commonAnnotations:
-    config-management/source: helm-metachart-v3
-  podAnnotations: {}
+  nameOverride: ""
+  fullnameOverride: ""
+  commonLabels: {}
+  commonAnnotations: {}
 
-serviceDiscovery:
-  enabled: true
-  domainSuffix: svc.cluster.local
-
-networkPolicy:
-  enabled: true
-  deriveFromDependencies: true
-
-monitoring:
-  enabled: true
-  prometheus:
-    scrape: true
-    path: /metrics
-    port: 8080
-    serviceMonitor:
-      enabled: false
-      interval: 30s
-      labels: {}
-
-serviceMesh:
-  enabled: false
-  provider: istio
-  gateway:
-    enabled: false
-    name: public-gateway
-    hosts:
-      - "*"
-    selector:
-      istio: ingressgateway
+serviceAccount:
+  create: true
+  annotations: {}
 
 defaults:
+  enabled: true
   replicaCount: 1
   containerPort: 8080
-  serviceAccount:
-    create: false
-    name: ""
+  image:
+    repository: ""
+    tag: ""
+    pullPolicy: ""
+  command: []
+  args: []
   service:
     enabled: true
     type: ClusterIP
     port: 80
-    annotations: {}
   ingress:
     enabled: false
-    className: nginx
+    className: ""
     host: ""
     path: /
     pathType: Prefix
     annotations: {}
-  env: {}
   config: {}
   secrets: {}
+  env: {}
   resources:
     requests:
       cpu: 100m
@@ -73,7 +48,7 @@ defaults:
     liveness:
       enabled: true
       path: /health
-      initialDelaySeconds: 15
+      initialDelaySeconds: 10
       periodSeconds: 10
       timeoutSeconds: 2
       failureThreshold: 3
@@ -89,6 +64,20 @@ defaults:
     minReplicas: 1
     maxReplicas: 3
     targetCPUUtilizationPercentage: 80
+  monitoring:
+    enabled: true
+    path: /metrics
+    port: 8080
+    scrape: true
+    serviceMonitor:
+      enabled: false
+      interval: 30s
+  networkPolicy:
+    enabled: true
+    ingress:
+      from: []
+    egress:
+      enabled: true
   podSecurityContext:
     runAsNonRoot: true
     seccompProfile:
@@ -99,12 +88,9 @@ defaults:
     capabilities:
       drop:
         - ALL
-  networkPolicy:
-    enabled: true
-    ingress:
-      from: []
-  monitoring:
-    enabled: true
+  podAnnotations: {}
+  podLabels: {}
+  dependencies: {}
   serviceMesh:
     enabled: false
     virtualService:
@@ -118,47 +104,58 @@ defaults:
 
 profiles:
   web:
-    replicaCount: 1
-    containerPort: 3000
     service:
       enabled: true
       port: 80
     ingress:
       enabled: true
       path: /
-      pathType: Prefix
-    probes:
-      liveness:
-        path: /health
-      readiness:
-        path: /ready
+    monitoring:
+      enabled: true
+      path: /metrics
+      port: 8080
   api:
-    replicaCount: 1
-    containerPort: 8080
     service:
       enabled: true
       port: 80
     ingress:
       enabled: false
-    probes:
-      liveness:
-        path: /health
-      readiness:
-        path: /ready
+    monitoring:
+      enabled: true
+      path: /metrics
+      port: 8080
   worker:
-    replicaCount: 1
-    containerPort: 8080
     service:
-      enabled: false
+      enabled: true
+      port: 80
     ingress:
       enabled: false
-    probes:
-      liveness:
-        enabled: false
-      readiness:
-        enabled: false
     monitoring:
+      enabled: true
+      path: /metrics
+      port: 8080
+
+monitoring:
+  enabled: true
+  prometheus:
+    scrape: true
+    serviceMonitor:
       enabled: false
+      namespace: ""
+      labels: {}
+
+serviceMesh:
+  enabled: false
+  provider: istio
+  gateway:
+    enabled: false
+    name: public-gateway
+    namespace: ""
+    selector:
+      istio: ingressgateway
+    hosts:
+      - demo.local
+    port: 80
 
 services:
   frontend:
@@ -166,29 +163,35 @@ services:
     profile: web
     image:
       repository: frontend
+    containerPort: 8080
     ingress:
+      enabled: true
       host: frontend.local
+      path: /
     env:
-      APP_MODE: frontend
-      API_BASE_PATH: /api
+      APP_NAME: frontend
     dependencies:
       apiGateway:
         service: apiGateway
         envName: API_GATEWAY_URL
         protocol: http
         port: 80
+    networkPolicy:
+      ingress:
+        from: []
 
   apiGateway:
     enabled: true
     profile: api
     image:
       repository: api-gateway
+    containerPort: 8080
     ingress:
       enabled: true
       host: api.local
       path: /
     env:
-      APP_MODE: api-gateway
+      APP_NAME: api-gateway
     dependencies:
       userService:
         service: userService
@@ -200,43 +203,61 @@ services:
         envName: ORDER_SERVICE_URL
         protocol: http
         port: 80
+    networkPolicy:
+      ingress:
+        from:
+          - frontend
     serviceMesh:
-      enabled: false
       virtualService:
-        enabled: false
+        enabled: true
         hosts:
           - api.local
         pathPrefix: /
       destinationRule:
-        enabled: false
+        enabled: true
 
   userService:
     enabled: true
     profile: api
     image:
       repository: user-service
+    containerPort: 8080
     env:
-      APP_MODE: user-service
-    config:
-      USERS_STORAGE_MODE: memory
-    secrets:
-      JWT_SECRET: change-me
+      APP_NAME: user-service
+    networkPolicy:
+      ingress:
+        from:
+          - apiGateway
 
   orderService:
     enabled: true
     profile: api
     image:
       repository: order-service
+    containerPort: 8080
     env:
-      APP_MODE: order-service
-    config:
-      ORDERS_STORAGE_MODE: memory
+      APP_NAME: order-service
+    dependencies:
+      notificationWorker:
+        service: notificationWorker
+        envName: NOTIFICATION_WORKER_URL
+        protocol: http
+        port: 80
+    networkPolicy:
+      ingress:
+        from:
+          - apiGateway
 
   notificationWorker:
     enabled: true
     profile: worker
     image:
       repository: notification-worker
+    containerPort: 8080
     env:
-      APP_MODE: notification-worker
-      QUEUE_NAME: notifications
+      APP_NAME: notification-worker
+      WORKER_MODE: background
+    networkPolicy:
+      ingress:
+        from:
+          - orderService

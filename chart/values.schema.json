@@ -1,275 +1,130 @@
 {
-  "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "Meta-chart v3 values schema",
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "title": "vkr-metachart values schema",
   "type": "object",
   "additionalProperties": true,
-  "required": ["global", "defaults", "profiles", "services"],
   "properties": {
     "global": {
       "type": "object",
-      "additionalProperties": true,
-      "required": ["environment"],
       "properties": {
-        "environment": {"type": "string", "minLength": 1},
-        "namespace": {"type": "string"},
-        "imageRegistry": {"type": "string"},
-        "imageTag": {"type": "string"},
-        "imagePullPolicy": {"type": "string", "enum": ["Always", "IfNotPresent", "Never"]},
-        "imagePullSecrets": {"type": "array", "items": {"type": "object"}},
-        "commonLabels": {"type": "object", "additionalProperties": {"type": "string"}},
-        "commonAnnotations": {"type": "object", "additionalProperties": {"type": "string"}},
-        "podAnnotations": {"type": "object", "additionalProperties": {"type": "string"}}
-      }
-    },
-    "serviceDiscovery": {
-      "type": "object",
-      "additionalProperties": false,
-      "properties": {
-        "enabled": {"type": "boolean"},
-        "domainSuffix": {"type": "string"}
-      }
-    },
-    "networkPolicy": {
-      "type": "object",
-      "additionalProperties": false,
-      "properties": {
-        "enabled": {"type": "boolean"},
-        "deriveFromDependencies": {"type": "boolean"}
-      }
-    },
-    "monitoring": {
-      "type": "object",
-      "additionalProperties": true,
-      "properties": {
-        "enabled": {"type": "boolean"},
-        "prometheus": {
-          "type": "object",
-          "additionalProperties": true,
-          "properties": {
-            "scrape": {"type": "boolean"},
-            "path": {"type": "string"},
-            "port": {"type": ["integer", "string"]},
-            "serviceMonitor": {
-              "type": "object",
-              "additionalProperties": true,
-              "properties": {
-                "enabled": {"type": "boolean"},
-                "interval": {"type": "string"},
-                "labels": {"type": "object", "additionalProperties": {"type": "string"}}
-              }
-            }
-          }
+        "environment": {
+          "type": "string"
+        },
+        "namespace": {
+          "type": "string"
+        },
+        "imageRegistry": {
+          "type": "string"
+        },
+        "imageTag": {
+          "type": "string"
+        },
+        "imagePullPolicy": {
+          "type": "string",
+          "enum": [
+            "Always",
+            "IfNotPresent",
+            "Never"
+          ]
         }
       }
-    },
-    "serviceMesh": {
-      "type": "object",
-      "additionalProperties": true,
-      "properties": {
-        "enabled": {"type": "boolean"},
-        "provider": {"type": "string", "enum": ["istio"]},
-        "gateway": {
-          "type": "object",
-          "additionalProperties": true,
-          "properties": {
-            "enabled": {"type": "boolean"},
-            "name": {"type": "string"},
-            "hosts": {"type": "array", "items": {"type": "string"}},
-            "selector": {"type": "object", "additionalProperties": {"type": "string"}}
-          }
-        }
-      }
-    },
-    "defaults": {"$ref": "#/definitions/serviceBase"},
-    "profiles": {
-      "type": "object",
-      "additionalProperties": {"$ref": "#/definitions/serviceBase"}
     },
     "services": {
       "type": "object",
-      "minProperties": 1,
-      "additionalProperties": {"$ref": "#/definitions/service"}
-    }
-  },
-  "definitions": {
-    "stringMap": {
-      "type": "object",
-      "additionalProperties": {"type": ["string", "number", "integer", "boolean"]}
-    },
-    "resources": {
-      "type": "object",
-      "additionalProperties": true,
-      "properties": {
-        "requests": {
-          "type": "object",
-          "additionalProperties": {"type": "string"},
-          "properties": {"cpu": {"type": "string"}, "memory": {"type": "string"}}
-        },
-        "limits": {
-          "type": "object",
-          "additionalProperties": {"type": "string"},
-          "properties": {"cpu": {"type": "string"}, "memory": {"type": "string"}}
-        }
-      }
-    },
-    "probe": {
-      "type": "object",
-      "additionalProperties": true,
-      "properties": {
-        "enabled": {"type": "boolean"},
-        "path": {"type": "string"},
-        "initialDelaySeconds": {"type": "integer", "minimum": 0},
-        "periodSeconds": {"type": "integer", "minimum": 1},
-        "timeoutSeconds": {"type": "integer", "minimum": 1},
-        "failureThreshold": {"type": "integer", "minimum": 1}
-      }
-    },
-    "serviceBase": {
-      "type": "object",
-      "additionalProperties": true,
-      "properties": {
-        "enabled": {"type": "boolean"},
-        "profile": {"type": "string"},
-        "replicaCount": {"type": "integer", "minimum": 0},
-        "containerPort": {"type": "integer", "minimum": 1, "maximum": 65535},
-        "command": {"type": "array", "items": {"type": "string"}},
-        "args": {"type": "array", "items": {"type": "string"}},
-        "image": {
-          "type": "object",
-          "additionalProperties": true,
-          "properties": {
-            "repository": {"type": "string"},
-            "tag": {"type": "string"},
-            "pullPolicy": {"type": "string", "enum": ["Always", "IfNotPresent", "Never"]}
-          }
-        },
-        "serviceAccount": {
-          "type": "object",
-          "additionalProperties": true,
-          "properties": {"create": {"type": "boolean"}, "name": {"type": "string"}}
-        },
-        "service": {
-          "type": "object",
-          "additionalProperties": true,
-          "properties": {
-            "enabled": {"type": "boolean"},
-            "type": {"type": "string", "enum": ["ClusterIP", "NodePort", "LoadBalancer", "ExternalName"]},
-            "port": {"type": "integer", "minimum": 1, "maximum": 65535},
-            "targetPort": {"type": "integer", "minimum": 1, "maximum": 65535},
-            "annotations": {"type": "object", "additionalProperties": {"type": "string"}}
-          }
-        },
-        "ingress": {
-          "type": "object",
-          "additionalProperties": true,
-          "properties": {
-            "enabled": {"type": "boolean"},
-            "className": {"type": "string"},
-            "host": {"type": "string"},
-            "path": {"type": "string"},
-            "pathType": {"type": "string", "enum": ["Prefix", "Exact", "ImplementationSpecific"]},
-            "annotations": {"type": "object", "additionalProperties": {"type": "string"}}
-          }
-        },
-        "env": {"$ref": "#/definitions/stringMap"},
-        "config": {"$ref": "#/definitions/stringMap"},
-        "secrets": {"$ref": "#/definitions/stringMap"},
-        "resources": {"$ref": "#/definitions/resources"},
-        "probes": {
-          "type": "object",
-          "additionalProperties": true,
-          "properties": {
-            "liveness": {"$ref": "#/definitions/probe"},
-            "readiness": {"$ref": "#/definitions/probe"}
-          }
-        },
-        "autoscaling": {
-          "type": "object",
-          "additionalProperties": true,
-          "properties": {
-            "enabled": {"type": "boolean"},
-            "minReplicas": {"type": "integer", "minimum": 1},
-            "maxReplicas": {"type": "integer", "minimum": 1},
-            "targetCPUUtilizationPercentage": {"type": "integer", "minimum": 1, "maximum": 100}
-          }
-        },
-        "podSecurityContext": {"type": "object", "additionalProperties": true},
-        "securityContext": {"type": "object", "additionalProperties": true},
-        "networkPolicy": {
-          "type": "object",
-          "additionalProperties": true,
-          "properties": {
-            "enabled": {"type": "boolean"},
-            "ingress": {
-              "type": "object",
-              "additionalProperties": true,
-              "properties": {"from": {"type": "array", "items": {"type": "string"}}}
-            }
-          }
-        },
-        "monitoring": {
-          "type": "object",
-          "additionalProperties": true,
-          "properties": {"enabled": {"type": "boolean"}}
-        },
-        "serviceMesh": {
-          "type": "object",
-          "additionalProperties": true,
-          "properties": {
-            "enabled": {"type": "boolean"},
-            "virtualService": {
-              "type": "object",
-              "additionalProperties": true,
-              "properties": {
-                "enabled": {"type": "boolean"},
-                "hosts": {"type": "array", "items": {"type": "string"}},
-                "gateways": {"type": "array", "items": {"type": "string"}},
-                "pathPrefix": {"type": "string"}
-              }
-            },
-            "destinationRule": {
-              "type": "object",
-              "additionalProperties": true,
-              "properties": {
-                "enabled": {"type": "boolean"},
-                "trafficPolicy": {"type": "object", "additionalProperties": true}
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          },
+          "profile": {
+            "type": "string"
+          },
+          "replicaCount": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "containerPort": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 65535
+          },
+          "image": {
+            "type": "object",
+            "properties": {
+              "repository": {
+                "type": "string"
+              },
+              "tag": {
+                "type": "string"
+              },
+              "pullPolicy": {
+                "type": "string",
+                "enum": [
+                  "Always",
+                  "IfNotPresent",
+                  "Never",
+                  ""
+                ]
               }
             }
-          }
-        }
-      }
-    },
-    "dependency": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": ["service", "envName"],
-      "properties": {
-        "service": {"type": "string", "minLength": 1},
-        "envName": {"type": "string", "pattern": "^[A-Z_][A-Z0-9_]*$"},
-        "protocol": {"type": "string", "enum": ["http", "https", "grpc"]},
-        "port": {"type": "integer", "minimum": 1, "maximum": 65535}
-      }
-    },
-    "service": {
-      "allOf": [
-        {"$ref": "#/definitions/serviceBase"},
-        {
-          "type": "object",
-          "required": ["enabled", "profile", "image"],
-          "properties": {
-            "profile": {"type": "string", "enum": ["web", "api", "worker"]},
-            "image": {
-              "type": "object",
-              "required": ["repository"],
-              "properties": {"repository": {"type": "string", "minLength": 1}}
-            },
-            "dependencies": {
-              "type": "object",
-              "additionalProperties": {"$ref": "#/definitions/dependency"}
+          },
+          "service": {
+            "type": "object",
+            "properties": {
+              "enabled": {
+                "type": "boolean"
+              },
+              "type": {
+                "type": "string"
+              },
+              "port": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 65535
+              }
             }
+          },
+          "ingress": {
+            "type": "object",
+            "properties": {
+              "enabled": {
+                "type": "boolean"
+              },
+              "host": {
+                "type": "string"
+              },
+              "path": {
+                "type": "string"
+              },
+              "pathType": {
+                "type": "string"
+              }
+            }
+          },
+          "env": {
+            "type": "object"
+          },
+          "config": {
+            "type": "object"
+          },
+          "secrets": {
+            "type": "object"
+          },
+          "dependencies": {
+            "type": "object"
+          },
+          "networkPolicy": {
+            "type": "object"
+          },
+          "monitoring": {
+            "type": "object"
+          },
+          "serviceMesh": {
+            "type": "object"
           }
         }
-      ]
+      }
     }
   }
 }

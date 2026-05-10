@@ -1,0 +1,6 @@
+# Example override for GitLab Container Registry.
+# In GitLab CI/CD prefer --set global.imageRegistry="$CI_REGISTRY_IMAGE" --set global.imageTag="$CI_COMMIT_SHORT_SHA".
+global:
+  imageRegistry: registry.gitlab.com/group/project
+  imageTag: main
+  imagePullPolicy: IfNotPresent

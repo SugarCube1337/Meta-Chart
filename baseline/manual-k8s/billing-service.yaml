@@ -1,51 +1,31 @@
-﻿apiVersion: v1
+apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: demo-billing-service
+  namespace: demo-app
   labels:
     app.kubernetes.io/name: billing-service
     app.kubernetes.io/instance: demo
-    app.kubernetes.io/component: api
-    app.kubernetes.io/part-of: multiservice-demo
-    app.kubernetes.io/managed-by: manual
+    app.kubernetes.io/component: billing-service
 ---
 apiVersion: v1
 kind: ConfigMap
 metadata:
   name: demo-billing-service-config
+  namespace: demo-app
   labels:
     app.kubernetes.io/name: billing-service
-    app.kubernetes.io/instance: demo
-    app.kubernetes.io/component: api
-    app.kubernetes.io/part-of: multiservice-demo
 data:
-  APP_MODE: "billing"
-  LOG_LEVEL: "info"
-  USER_SERVICE_URL: "http://demo-user-service.demo-app.svc.cluster.local:80"
-  ORDER_SERVICE_URL: "http://demo-order-service.demo-app.svc.cluster.local:80"
----
-apiVersion: v1
-kind: Secret
-metadata:
-  name: demo-billing-service-secret
-  labels:
-    app.kubernetes.io/name: billing-service
-    app.kubernetes.io/instance: demo
-    app.kubernetes.io/component: api
-    app.kubernetes.io/part-of: multiservice-demo
-type: Opaque
-stringData:
-  BILLING_TOKEN: "change-me"
+  APP_NAME: billing-service
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: demo-billing-service
+  namespace: demo-app
   labels:
     app.kubernetes.io/name: billing-service
     app.kubernetes.io/instance: demo
-    app.kubernetes.io/component: api
-    app.kubernetes.io/part-of: multiservice-demo
 spec:
   replicas: 1
   selector:
@@ -57,66 +37,77 @@ spec:
       labels:
         app.kubernetes.io/name: billing-service
         app.kubernetes.io/instance: demo
-        app.kubernetes.io/component: api
-        app.kubernetes.io/part-of: multiservice-demo
+        app.kubernetes.io/profile: api
       annotations:
         prometheus.io/scrape: "true"
-        prometheus.io/path: "/metrics"
+        prometheus.io/path: /metrics
         prometheus.io/port: "8080"
     spec:
       serviceAccountName: demo-billing-service
-      podSecurityContext:
+      securityContext:
         runAsNonRoot: true
         seccompProfile:
           type: RuntimeDefault
       containers:
         - name: billing-service
-          image: "registry.example.local/vkr/billing-service:dev"
+          image: billing-service:dev-local
           imagePullPolicy: IfNotPresent
           ports:
             - name: http
               containerPort: 8080
               protocol: TCP
+          env:
+            - name: APP_ENV
+              value: dev
+            - name: SERVICE_NAME
+              value: billing-service
+            - name: APP_NAME
+              value: billing-service
           envFrom:
             - configMapRef:
                 name: demo-billing-service-config
-            - secretRef:
-                name: demo-billing-service-secret
-          resources:
-            requests:
-              cpu: "100m"
-              memory: "128Mi"
-            limits:
-              cpu: "500m"
-              memory: "512Mi"
-          livenessProbe:
-            httpGet:
-              path: /health
-              port: http
-            initialDelaySeconds: 15
-            periodSeconds: 20
-          readinessProbe:
-            httpGet:
-              path: /ready
-              port: http
-            initialDelaySeconds: 5
-            periodSeconds: 10
           securityContext:
             allowPrivilegeEscalation: false
             readOnlyRootFilesystem: false
             capabilities:
               drop:
                 - ALL
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 2
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 2
+            failureThreshold: 3
 ---
 apiVersion: v1
 kind: Service
 metadata:
   name: demo-billing-service
+  namespace: demo-app
   labels:
     app.kubernetes.io/name: billing-service
     app.kubernetes.io/instance: demo
-    app.kubernetes.io/component: api
-    app.kubernetes.io/part-of: multiservice-demo
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/path: /metrics
+    prometheus.io/port: "8080"
 spec:
   type: ClusterIP
   selector:
@@ -132,11 +123,7 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
   name: demo-billing-service
-  labels:
-    app.kubernetes.io/name: billing-service
-    app.kubernetes.io/instance: demo
-    app.kubernetes.io/component: api
-    app.kubernetes.io/part-of: multiservice-demo
+  namespace: demo-app
 spec:
   podSelector:
     matchLabels:
@@ -151,42 +138,5 @@ spec:
             matchLabels:
               app.kubernetes.io/name: api-gateway
               app.kubernetes.io/instance: demo
-      ports:
-        - protocol: TCP
-          port: 8080
   egress:
-    - to:
-        - podSelector:
-            matchLabels:
-              app.kubernetes.io/name: user-service
-              app.kubernetes.io/instance: demo
-      ports:
-        - protocol: TCP
-          port: 8080
-    - to:
-        - podSelector:
-            matchLabels:
-              app.kubernetes.io/name: order-service
-              app.kubernetes.io/instance: demo
-      ports:
-        - protocol: TCP
-          port: 8080
----
-apiVersion: monitoring.coreos.com/v1
-kind: ServiceMonitor
-metadata:
-  name: demo-billing-service
-  labels:
-    app.kubernetes.io/name: billing-service
-    app.kubernetes.io/instance: demo
-    app.kubernetes.io/component: api
-    app.kubernetes.io/part-of: multiservice-demo
-spec:
-  selector:
-    matchLabels:
-      app.kubernetes.io/name: billing-service
-      app.kubernetes.io/instance: demo
-  endpoints:
-    - port: http
-      path: /metrics
-      interval: 30s
+    - {}
