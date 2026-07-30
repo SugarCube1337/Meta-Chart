@@ -1,0 +1,9 @@
+﻿PS> kind load docker-image frontend:nonroot-local --name vkr-demo
+kind.exe : Image: "frontend:nonroot-local" with ID "sha256:397d8ea38b3b55124836d5b170e0c7cabb53743c9717c114108de13f463aa801" not yet present o
+n node "vkr-demo-control-plane", loading...
+C:\Users\Данила\vscode\Meta-Chart\scripts\run-all-measurements.ps1:86 знак:19
++         $output = & $exe @args 2>&1
++                   ~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Image: "fronten...ne", loading...:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 

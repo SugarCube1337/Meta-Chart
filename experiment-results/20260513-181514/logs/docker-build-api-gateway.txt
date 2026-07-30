@@ -1,0 +1,51 @@
+﻿PS> docker build -t api-gateway:nonroot-local C:\Users\Данила\vscode\Meta-Chart\services\api-gateway
+docker.exe : #0 building with "desktop-linux" instance using docker driver
+C:\Users\Данила\vscode\Meta-Chart\scripts\run-all-measurements.ps1:86 знак:19
++         $output = & $exe @args 2>&1
++                   ~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (#0 building wit...g docker driver:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 352B done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/library/python:3.12-alpine
+#2 DONE 0.3s
+
+#3 [internal] load .dockerignore
+#3 transferring context: 84B done
+#3 DONE 0.0s
+
+#4 [internal] load build context
+#4 transferring context: 57B done
+#4 DONE 0.0s
+
+#5 [1/5] FROM docker.io/library/python:3.12-alpine@sha256:236173eb74001afe2f60862de935b74fcbd00adfca247b2c27051a70a6a39a2d
+#5 resolve docker.io/library/python:3.12-alpine@sha256:236173eb74001afe2f60862de935b74fcbd00adfca247b2c27051a70a6a39a2d 0.0s done
+#5 DONE 0.1s
+
+#6 [3/5] WORKDIR /app
+#6 CACHED
+
+#7 [2/5] RUN addgroup -g 10001 app && adduser -D -u 10001 -G app app
+#7 CACHED
+
+#8 [4/5] COPY --chown=10001:10001 server.py /app/server.py
+#8 CACHED
+
+#9 [5/5] COPY --chown=10001:10001 app.py /app/app.py
+#9 CACHED
+
+#10 exporting to image
+#10 exporting layers done
+#10 exporting manifest sha256:7bb23b77093eb2de3e292dae75dbd6b535ac42d10eca187bf9a5818e91481b71 done
+#10 exporting config sha256:9b26362b8d00f3d40fdd8e1780b8e8816d6488e5998f70225fb6539a5cc67091 done
+#10 exporting attestation manifest sha256:2a8447c276f2a0d6fa9a3b14e40c42347dce401ee573cbd2cb3ba60e5f06bb2d
+#10 exporting attestation manifest sha256:2a8447c276f2a0d6fa9a3b14e40c42347dce401ee573cbd2cb3ba60e5f06bb2d 0.1s done
+#10 exporting manifest list sha256:ed810eeec6aa524f78f60a2af8b5c0caf01df4a34b7078220d361c1562e934a1 0.0s done
+#10 naming to docker.io/library/api-gateway:nonroot-local done
+#10 unpacking to docker.io/library/api-gateway:nonroot-local
+#10 unpacking to docker.io/library/api-gateway:nonroot-local 0.0s done
+#10 DONE 0.2s

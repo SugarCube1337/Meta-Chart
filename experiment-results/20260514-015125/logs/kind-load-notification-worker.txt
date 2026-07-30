@@ -1,0 +1,9 @@
+﻿PS> kind load docker-image notification-worker:nonroot-local --name vkr-demo
+kind.exe : Image: "notification-worker:nonroot-local" with ID "sha256:4849c25ffc13896c73661194e2986bff4e4ad9aab36a33ccb77e962aa03a72d4" not ye
+t present on node "vkr-demo-control-plane", loading...
+C:\Users\Данила\vscode\Meta-Chart\scripts\run-all-measurements.ps1:86 знак:19
++         $output = & $exe @args 2>&1
++                   ~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Image: "notific...ne", loading...:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 

@@ -1,0 +1,7 @@
+﻿PS> kubectl get deploy -n demo-app
+NAME                       READY   UP-TO-DATE   AVAILABLE   AGE
+demo-api-gateway           1/1     1            1           3d8h
+demo-frontend              1/1     1            1           3d8h
+demo-notification-worker   1/1     1            1           3d8h
+demo-order-service         1/1     1            1           3d8h
+demo-user-service          1/1     1            1           3d8h

@@ -1,0 +1,11 @@
+﻿PS> helm template demo C:\Users\Данила\vscode\Meta-Chart\chart -f C:\Users\Данила\vscode\Meta-Chart\chart\values-dev.yaml -f C:\Users\Данила\vscode\Meta-Chart\experiments\invalid-values\bad-container-port.yaml
+helm.exe : Error: values don't meet the specifications of the schema(s) in the following chart(s):
+C:\Users\Данила\vscode\Meta-Chart\scripts\run-all-measurements.ps1:138 знак:19
++         $output = & helm @HelmArgs 2>&1
++                   ~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Error: values d...owing chart(s)::String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+vkr-metachart:
+- at '/services/apiGateway/containerPort': got string, want integer
+

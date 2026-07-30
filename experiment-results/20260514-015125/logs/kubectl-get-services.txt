@@ -1,0 +1,7 @@
+﻿PS> kubectl get svc -n demo-app
+NAME                       TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)   AGE
+demo-api-gateway           ClusterIP   10.96.90.32     <none>        80/TCP    3d8h
+demo-frontend              ClusterIP   10.96.142.130   <none>        80/TCP    3d8h
+demo-notification-worker   ClusterIP   10.96.130.58    <none>        80/TCP    3d8h
+demo-order-service         ClusterIP   10.96.19.40     <none>        80/TCP    3d8h
+demo-user-service          ClusterIP   10.96.195.128   <none>        80/TCP    3d8h

@@ -1,0 +1,6 @@
+﻿"image","size_bytes","size_mb"
+"frontend:nonroot-local","18076966","17,24"
+"api-gateway:nonroot-local","18076831","17,24"
+"user-service:nonroot-local","18076782","17,24"
+"order-service:nonroot-local","18076853","17,24"
+"notification-worker:nonroot-local","18076797","17,24"

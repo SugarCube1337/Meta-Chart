@@ -1,0 +1,6 @@
+﻿PS> kubectl wait --for=condition=Ready pod -l app.kubernetes.io/instance=demo -n demo-app --timeout=120s
+pod/demo-api-gateway-78fdb7fd97-tjhv5 condition met
+pod/demo-frontend-569f656469-dr4b2 condition met
+pod/demo-notification-worker-7bbbf98cb9-mm8hf condition met
+pod/demo-order-service-857fd6c645-dgxsk condition met
+pod/demo-user-service-65cc44b467-vbwkv condition met

@@ -1,0 +1,846 @@
+﻿PS> helm template demo C:\Users\Данила\vscode\Meta-Chart\chart -f C:\Users\Данила\vscode\Meta-Chart\chart\values-dev.yaml
+---
+# Source: vkr-metachart/templates/networkpolicy.yaml
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: demo-api-gateway
+  namespace: demo-app
+  labels:
+    helm.sh/chart: vkr-metachart-4.0.0
+    app.kubernetes.io/name: api-gateway
+    app.kubernetes.io/instance: demo
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/part-of: vkr-metachart
+    app.kubernetes.io/component: api-gateway
+    app.kubernetes.io/version: "1.0.0"
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: api-gateway
+      app.kubernetes.io/instance: demo
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: frontend
+              app.kubernetes.io/instance: demo
+  egress:
+    - {}
+---
+# Source: vkr-metachart/templates/networkpolicy.yaml
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: demo-frontend
+  namespace: demo-app
+  labels:
+    helm.sh/chart: vkr-metachart-4.0.0
+    app.kubernetes.io/name: frontend
+    app.kubernetes.io/instance: demo
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/part-of: vkr-metachart
+    app.kubernetes.io/component: frontend
+    app.kubernetes.io/version: "1.0.0"
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: frontend
+      app.kubernetes.io/instance: demo
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    - {}
+  egress:
+    - {}
+---
+# Source: vkr-metachart/templates/networkpolicy.yaml
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: demo-notification-worker
+  namespace: demo-app
+  labels:
+    helm.sh/chart: vkr-metachart-4.0.0
+    app.kubernetes.io/name: notification-worker
+    app.kubernetes.io/instance: demo
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/part-of: vkr-metachart
+    app.kubernetes.io/component: notification-worker
+    app.kubernetes.io/version: "1.0.0"
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: notification-worker
+      app.kubernetes.io/instance: demo
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: order-service
+              app.kubernetes.io/instance: demo
+  egress:
+    - {}
+---
+# Source: vkr-metachart/templates/networkpolicy.yaml
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: demo-order-service
+  namespace: demo-app
+  labels:
+    helm.sh/chart: vkr-metachart-4.0.0
+    app.kubernetes.io/name: order-service
+    app.kubernetes.io/instance: demo
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/part-of: vkr-metachart
+    app.kubernetes.io/component: order-service
+    app.kubernetes.io/version: "1.0.0"
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: order-service
+      app.kubernetes.io/instance: demo
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: api-gateway
+              app.kubernetes.io/instance: demo
+  egress:
+    - {}
+---
+# Source: vkr-metachart/templates/networkpolicy.yaml
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: demo-user-service
+  namespace: demo-app
+  labels:
+    helm.sh/chart: vkr-metachart-4.0.0
+    app.kubernetes.io/name: user-service
+    app.kubernetes.io/instance: demo
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/part-of: vkr-metachart
+    app.kubernetes.io/component: user-service
+    app.kubernetes.io/version: "1.0.0"
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: user-service
+      app.kubernetes.io/instance: demo
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: api-gateway
+              app.kubernetes.io/instance: demo
+  egress:
+    - {}
+---
+# Source: vkr-metachart/templates/serviceaccount.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: demo-api-gateway
+  namespace: demo-app
+  labels:
+    helm.sh/chart: vkr-metachart-4.0.0
+    app.kubernetes.io/name: api-gateway
+    app.kubernetes.io/instance: demo
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/part-of: vkr-metachart
+    app.kubernetes.io/component: api-gateway
+    app.kubernetes.io/version: "1.0.0"
+---
+# Source: vkr-metachart/templates/serviceaccount.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: demo-frontend
+  namespace: demo-app
+  labels:
+    helm.sh/chart: vkr-metachart-4.0.0
+    app.kubernetes.io/name: frontend
+    app.kubernetes.io/instance: demo
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/part-of: vkr-metachart
+    app.kubernetes.io/component: frontend
+    app.kubernetes.io/version: "1.0.0"
+---
+# Source: vkr-metachart/templates/serviceaccount.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: demo-notification-worker
+  namespace: demo-app
+  labels:
+    helm.sh/chart: vkr-metachart-4.0.0
+    app.kubernetes.io/name: notification-worker
+    app.kubernetes.io/instance: demo
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/part-of: vkr-metachart
+    app.kubernetes.io/component: notification-worker
+    app.kubernetes.io/version: "1.0.0"
+---
+# Source: vkr-metachart/templates/serviceaccount.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: demo-order-service
+  namespace: demo-app
+  labels:
+    helm.sh/chart: vkr-metachart-4.0.0
+    app.kubernetes.io/name: order-service
+    app.kubernetes.io/instance: demo
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/part-of: vkr-metachart
+    app.kubernetes.io/component: order-service
+    app.kubernetes.io/version: "1.0.0"
+---
+# Source: vkr-metachart/templates/serviceaccount.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: demo-user-service
+  namespace: demo-app
+  labels:
+    helm.sh/chart: vkr-metachart-4.0.0
+    app.kubernetes.io/name: user-service
+    app.kubernetes.io/instance: demo
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/part-of: vkr-metachart
+    app.kubernetes.io/component: user-service
+    app.kubernetes.io/version: "1.0.0"
+---
+# Source: vkr-metachart/templates/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: demo-api-gateway
+  namespace: demo-app
+  labels:
+    helm.sh/chart: vkr-metachart-4.0.0
+    app.kubernetes.io/name: api-gateway
+    app.kubernetes.io/instance: demo
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/part-of: vkr-metachart
+    app.kubernetes.io/component: api-gateway
+    app.kubernetes.io/version: "1.0.0"
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/path: "/metrics"
+    prometheus.io/port: "8080"
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: api-gateway
+    app.kubernetes.io/instance: demo
+  ports:
+    - name: http
+      port: 80
+      targetPort: http
+      protocol: TCP
+---
+# Source: vkr-metachart/templates/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: demo-frontend
+  namespace: demo-app
+  labels:
+    helm.sh/chart: vkr-metachart-4.0.0
+    app.kubernetes.io/name: frontend
+    app.kubernetes.io/instance: demo
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/part-of: vkr-metachart
+    app.kubernetes.io/component: frontend
+    app.kubernetes.io/version: "1.0.0"
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/path: "/metrics"
+    prometheus.io/port: "8080"
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: frontend
+    app.kubernetes.io/instance: demo
+  ports:
+    - name: http
+      port: 80
+      targetPort: http
+      protocol: TCP
+---
+# Source: vkr-metachart/templates/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: demo-notification-worker
+  namespace: demo-app
+  labels:
+    helm.sh/chart: vkr-metachart-4.0.0
+    app.kubernetes.io/name: notification-worker
+    app.kubernetes.io/instance: demo
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/part-of: vkr-metachart
+    app.kubernetes.io/component: notification-worker
+    app.kubernetes.io/version: "1.0.0"
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/path: "/metrics"
+    prometheus.io/port: "8080"
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: notification-worker
+    app.kubernetes.io/instance: demo
+  ports:
+    - name: http
+      port: 80
+      targetPort: http
+      protocol: TCP
+---
+# Source: vkr-metachart/templates/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: demo-order-service
+  namespace: demo-app
+  labels:
+    helm.sh/chart: vkr-metachart-4.0.0
+    app.kubernetes.io/name: order-service
+    app.kubernetes.io/instance: demo
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/part-of: vkr-metachart
+    app.kubernetes.io/component: order-service
+    app.kubernetes.io/version: "1.0.0"
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/path: "/metrics"
+    prometheus.io/port: "8080"
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: order-service
+    app.kubernetes.io/instance: demo
+  ports:
+    - name: http
+      port: 80
+      targetPort: http
+      protocol: TCP
+---
+# Source: vkr-metachart/templates/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: demo-user-service
+  namespace: demo-app
+  labels:
+    helm.sh/chart: vkr-metachart-4.0.0
+    app.kubernetes.io/name: user-service
+    app.kubernetes.io/instance: demo
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/part-of: vkr-metachart
+    app.kubernetes.io/component: user-service
+    app.kubernetes.io/version: "1.0.0"
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/path: "/metrics"
+    prometheus.io/port: "8080"
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: user-service
+    app.kubernetes.io/instance: demo
+  ports:
+    - name: http
+      port: 80
+      targetPort: http
+      protocol: TCP
+---
+# Source: vkr-metachart/templates/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: demo-api-gateway
+  namespace: demo-app
+  labels:
+    helm.sh/chart: vkr-metachart-4.0.0
+    app.kubernetes.io/name: api-gateway
+    app.kubernetes.io/instance: demo
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/part-of: vkr-metachart
+    app.kubernetes.io/component: api-gateway
+    app.kubernetes.io/version: "1.0.0"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: api-gateway
+      app.kubernetes.io/instance: demo
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: api-gateway
+        app.kubernetes.io/instance: demo
+        app.kubernetes.io/profile: "api"
+        vkr.io/environment: "dev"
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/path: "/metrics"
+        prometheus.io/port: "8080"
+    spec:
+      serviceAccountName: demo-api-gateway
+      securityContext:
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: api-gateway
+          image: "api-gateway:dev-local"
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+          env:
+            - name: APP_ENV
+              value: "dev"
+            - name: SERVICE_NAME
+              value: "api-gateway"
+            - name: APP_NAME
+              value: "api-gateway"
+            - name: ORDER_SERVICE_URL
+              value: "http://demo-order-service.demo-app.svc.cluster.local:80"
+            - name: USER_SERVICE_URL
+              value: "http://demo-user-service.demo-app.svc.cluster.local:80"
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+              - ALL
+            readOnlyRootFilesystem: false
+          resources:
+            limits:
+              cpu: 500m
+              memory: 512Mi
+            requests:
+              cpu: 100m
+              memory: 128Mi
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 2
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 2
+            failureThreshold: 3
+---
+# Source: vkr-metachart/templates/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: demo-frontend
+  namespace: demo-app
+  labels:
+    helm.sh/chart: vkr-metachart-4.0.0
+    app.kubernetes.io/name: frontend
+    app.kubernetes.io/instance: demo
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/part-of: vkr-metachart
+    app.kubernetes.io/component: frontend
+    app.kubernetes.io/version: "1.0.0"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: frontend
+      app.kubernetes.io/instance: demo
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: frontend
+        app.kubernetes.io/instance: demo
+        app.kubernetes.io/profile: "web"
+        vkr.io/environment: "dev"
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/path: "/metrics"
+        prometheus.io/port: "8080"
+    spec:
+      serviceAccountName: demo-frontend
+      securityContext:
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: frontend
+          image: "frontend:dev-local"
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+          env:
+            - name: APP_ENV
+              value: "dev"
+            - name: SERVICE_NAME
+              value: "frontend"
+            - name: APP_NAME
+              value: "frontend"
+            - name: API_GATEWAY_URL
+              value: "http://demo-api-gateway.demo-app.svc.cluster.local:80"
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+              - ALL
+            readOnlyRootFilesystem: false
+          resources:
+            limits:
+              cpu: 500m
+              memory: 512Mi
+            requests:
+              cpu: 100m
+              memory: 128Mi
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 2
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 2
+            failureThreshold: 3
+---
+# Source: vkr-metachart/templates/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: demo-notification-worker
+  namespace: demo-app
+  labels:
+    helm.sh/chart: vkr-metachart-4.0.0
+    app.kubernetes.io/name: notification-worker
+    app.kubernetes.io/instance: demo
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/part-of: vkr-metachart
+    app.kubernetes.io/component: notification-worker
+    app.kubernetes.io/version: "1.0.0"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: notification-worker
+      app.kubernetes.io/instance: demo
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: notification-worker
+        app.kubernetes.io/instance: demo
+        app.kubernetes.io/profile: "worker"
+        vkr.io/environment: "dev"
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/path: "/metrics"
+        prometheus.io/port: "8080"
+    spec:
+      serviceAccountName: demo-notification-worker
+      securityContext:
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: notification-worker
+          image: "notification-worker:dev-local"
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+          env:
+            - name: APP_ENV
+              value: "dev"
+            - name: SERVICE_NAME
+              value: "notification-worker"
+            - name: APP_NAME
+              value: "notification-worker"
+            - name: WORKER_MODE
+              value: "background"
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+              - ALL
+            readOnlyRootFilesystem: false
+          resources:
+            limits:
+              cpu: 500m
+              memory: 512Mi
+            requests:
+              cpu: 100m
+              memory: 128Mi
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 2
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 2
+            failureThreshold: 3
+---
+# Source: vkr-metachart/templates/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: demo-order-service
+  namespace: demo-app
+  labels:
+    helm.sh/chart: vkr-metachart-4.0.0
+    app.kubernetes.io/name: order-service
+    app.kubernetes.io/instance: demo
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/part-of: vkr-metachart
+    app.kubernetes.io/component: order-service
+    app.kubernetes.io/version: "1.0.0"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: order-service
+      app.kubernetes.io/instance: demo
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: order-service
+        app.kubernetes.io/instance: demo
+        app.kubernetes.io/profile: "api"
+        vkr.io/environment: "dev"
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/path: "/metrics"
+        prometheus.io/port: "8080"
+    spec:
+      serviceAccountName: demo-order-service
+      securityContext:
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: order-service
+          image: "order-service:dev-local"
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+          env:
+            - name: APP_ENV
+              value: "dev"
+            - name: SERVICE_NAME
+              value: "order-service"
+            - name: APP_NAME
+              value: "order-service"
+            - name: NOTIFICATION_WORKER_URL
+              value: "http://demo-notification-worker.demo-app.svc.cluster.local:80"
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+              - ALL
+            readOnlyRootFilesystem: false
+          resources:
+            limits:
+              cpu: 500m
+              memory: 512Mi
+            requests:
+              cpu: 100m
+              memory: 128Mi
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 2
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 2
+            failureThreshold: 3
+---
+# Source: vkr-metachart/templates/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: demo-user-service
+  namespace: demo-app
+  labels:
+    helm.sh/chart: vkr-metachart-4.0.0
+    app.kubernetes.io/name: user-service
+    app.kubernetes.io/instance: demo
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/part-of: vkr-metachart
+    app.kubernetes.io/component: user-service
+    app.kubernetes.io/version: "1.0.0"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: user-service
+      app.kubernetes.io/instance: demo
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: user-service
+        app.kubernetes.io/instance: demo
+        app.kubernetes.io/profile: "api"
+        vkr.io/environment: "dev"
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/path: "/metrics"
+        prometheus.io/port: "8080"
+    spec:
+      serviceAccountName: demo-user-service
+      securityContext:
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: user-service
+          image: "user-service:dev-local"
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+          env:
+            - name: APP_ENV
+              value: "dev"
+            - name: SERVICE_NAME
+              value: "user-service"
+            - name: APP_NAME
+              value: "user-service"
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+              - ALL
+            readOnlyRootFilesystem: false
+          resources:
+            limits:
+              cpu: 500m
+              memory: 512Mi
+            requests:
+              cpu: 100m
+              memory: 128Mi
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 2
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 2
+            failureThreshold: 3
+---
+# Source: vkr-metachart/templates/ingress.yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: demo-api-gateway
+  namespace: demo-app
+  labels:
+    helm.sh/chart: vkr-metachart-4.0.0
+    app.kubernetes.io/name: api-gateway
+    app.kubernetes.io/instance: demo
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/part-of: vkr-metachart
+    app.kubernetes.io/component: api-gateway
+    app.kubernetes.io/version: "1.0.0"
+spec:
+  rules:
+    - host: api.local
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: demo-api-gateway
+                port:
+                  number: 80
+---
+# Source: vkr-metachart/templates/ingress.yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: demo-frontend
+  namespace: demo-app
+  labels:
+    helm.sh/chart: vkr-metachart-4.0.0
+    app.kubernetes.io/name: frontend
+    app.kubernetes.io/instance: demo
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/part-of: vkr-metachart
+    app.kubernetes.io/component: frontend
+    app.kubernetes.io/version: "1.0.0"
+spec:
+  rules:
+    - host: frontend.local
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: demo-frontend
+                port:
+                  number: 80

@@ -1,0 +1,8 @@
+﻿"name","command","exit_code","seconds","log_file"
+"helm-lint","helm lint C:\Users\Данила\vscode\Meta-Chart\chart","0","0,126","logs/helm-lint.txt"
+"rendered-dev","helm template demo C:\Users\Данила\vscode\Meta-Chart\chart -f C:\Users\Данила\vscode\Meta-Chart\chart\values-dev.yaml","0","0,107","logs/rendered-dev.txt"
+"rendered-stage","helm template demo C:\Users\Данила\vscode\Meta-Chart\chart -f C:\Users\Данила\vscode\Meta-Chart\chart\values-stage.yaml","0","0,102","logs/rendered-stage.txt"
+"rendered-prod","helm template demo C:\Users\Данила\vscode\Meta-Chart\chart -f C:\Users\Данила\vscode\Meta-Chart\chart\values-prod.yaml","0","0,104","logs/rendered-prod.txt"
+"rendered-istio","helm template demo C:\Users\Данила\vscode\Meta-Chart\chart -f C:\Users\Данила\vscode\Meta-Chart\chart\values-dev.yaml -f C:\Users\Данила\vscode\Meta-Chart\chart\values-istio.yaml","0","0,111","logs/rendered-istio.txt"
+"rendered-dev-with-billing","helm template demo C:\Users\Данила\vscode\Meta-Chart\chart -f C:\Users\Данила\vscode\Meta-Chart\chart\values-dev.yaml -f C:\Users\Данила\vscode\Meta-Chart\experiments\add-service\billing-service-values.yaml","0","0,109","logs/rendered-dev-with-billing.txt"
+"schema-validation-invalid-values","helm template demo C:\Users\Данила\vscode\Meta-Chart\chart -f C:\Users\Данила\vscode\Meta-Chart\chart\values-dev.yaml -f C:\Users\Данила\vscode\Meta-Chart\experiments\invalid-values\bad-container-port.yaml","1","0,095","logs/schema-validation-invalid-values.txt"

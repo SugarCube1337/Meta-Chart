@@ -7,9 +7,9 @@ render:
 	helm template demo ./chart -f ./chart/values-dev.yaml
 
 render-all:
-	helm template demo ./chart -f ./chart/values-dev.yaml > /tmp/rendered-dev.yaml
-	helm template demo ./chart -f ./chart/values-stage.yaml > /tmp/rendered-stage.yaml
-	helm template demo ./chart -f ./chart/values-prod.yaml > /tmp/rendered-prod.yaml
+	helm template demo .\chart -f .\chart\values-dev.yaml
+	helm template demo .\chart -f .\chart\values-stage.yaml
+	helm template demo .\chart -f .\chart\values-prod.yaml
 
 render-istio:
 	helm template demo ./chart -f ./chart/values-dev.yaml -f ./chart/values-istio.yaml

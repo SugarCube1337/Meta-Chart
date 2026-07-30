@@ -1,0 +1,2 @@
+﻿"test","expected","exit_code","passed","log_file"
+"schema-validation-invalid-values","failure","1","True","logs/schema-validation-invalid-values.txt"

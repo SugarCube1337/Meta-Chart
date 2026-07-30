@@ -1,0 +1,5 @@
+﻿"endpoint","url","status_code","passed","output_file"
+"/health","http://127.0.0.1:8080/health","0","False","smoke/health.txt"
+"/ready","http://127.0.0.1:8080/ready","0","False","smoke/ready.txt"
+"/metrics","http://127.0.0.1:8080/metrics","0","False","smoke/metrics.txt"
+"/dependencies","http://127.0.0.1:8080/dependencies","0","False","smoke/dependencies.txt"

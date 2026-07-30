@@ -1,0 +1,5 @@
+﻿PS> helm lint C:\Users\Данила\vscode\Meta-Chart\chart
+==> Linting C:\Users\╨Ф╨░╨╜╨╕╨╗╨░\vscode\Meta-Chart\chart
+[INFO] Chart.yaml: icon is recommended
+
+1 chart(s) linted, 0 chart(s) failed

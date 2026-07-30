@@ -1,0 +1,9 @@
+﻿PS> helm upgrade --install demo C:\Users\Данила\vscode\Meta-Chart\chart -n demo-app --create-namespace -f C:\Users\Данила\vscode\Meta-Chart\chart\values-dev.yaml --set global.imageRegistry= --set global.imageTag=nonroot-local --set global.imagePullPolicy=IfNotPresent
+Release "demo" has been upgraded. Happy Helming!
+NAME: demo
+LAST DEPLOYED: Wed May 13 18:15:36 2026
+NAMESPACE: demo-app
+STATUS: deployed
+REVISION: 4
+DESCRIPTION: Upgrade complete
+TEST SUITE: None

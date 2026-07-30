@@ -1,0 +1,49 @@
+﻿PS> docker build -t order-service:nonroot-local C:\Users\Данила\vscode\Meta-Chart\services\order-service
+docker.exe : #0 building with "desktop-linux" instance using docker driver
+C:\Users\Данила\vscode\Meta-Chart\scripts\run-all-measurements.ps1:86 знак:19
++         $output = & $exe @args 2>&1
++                   ~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (#0 building wit...g docker driver:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 354B done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/library/python:3.12-alpine
+#2 DONE 0.3s
+
+#3 [internal] load .dockerignore
+#3 transferring context: 84B done
+#3 DONE 0.0s
+
+#4 [internal] load build context
+#4 transferring context: 57B done
+#4 DONE 0.0s
+
+#5 [1/5] FROM docker.io/library/python:3.12-alpine@sha256:236173eb74001afe2f60862de935b74fcbd00adfca247b2c27051a70a6a39a2d
+#5 resolve docker.io/library/python:3.12-alpine@sha256:236173eb74001afe2f60862de935b74fcbd00adfca247b2c27051a70a6a39a2d 0.0s done
+#5 DONE 0.1s
+
+#6 [2/5] RUN addgroup -g 10001 app && adduser -D -u 10001 -G app app
+#6 CACHED
+
+#7 [3/5] WORKDIR /app
+#7 CACHED
+
+#8 [4/5] COPY --chown=10001:10001 server.py /app/server.py
+#8 CACHED
+
+#9 [5/5] COPY --chown=10001:10001 app.py /app/app.py
+#9 CACHED
+
+#10 exporting to image
+#10 exporting layers done
+#10 exporting manifest sha256:8c64ad6f00370f55fe5ffca1417d281cfad18c4e914bca2e2cb2c28bcbd91ee1 done
+#10 exporting config sha256:dfc3a87d66ae8e1c8f386876a38a0bf3c940dfbd11dab9ab18da5756fbf89249 done
+#10 exporting attestation manifest sha256:631af2ead93ed29f518b8dd0f288c0600d42c783a3bc21bba79a3c217a5405bb 0.1s done
+#10 exporting manifest list sha256:16a7fc3c4f72623b770cea4f0e245167af0f2e8076dad822dbd71b2be23a67fa 0.0s done
+#10 naming to docker.io/library/order-service:nonroot-local done
+#10 unpacking to docker.io/library/order-service:nonroot-local 0.0s done
+#10 DONE 0.2s

@@ -1,0 +1,9 @@
+﻿PS> kind load docker-image api-gateway:nonroot-local --name vkr-demo
+kind.exe : Image: "api-gateway:nonroot-local" with ID "sha256:ed810eeec6aa524f78f60a2af8b5c0caf01df4a34b7078220d361c1562e934a1" not yet presen
+t on node "vkr-demo-control-plane", loading...
+C:\Users\Данила\vscode\Meta-Chart\scripts\run-all-measurements.ps1:86 знак:19
++         $output = & $exe @args 2>&1
++                   ~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Image: "api-gat...ne", loading...:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 

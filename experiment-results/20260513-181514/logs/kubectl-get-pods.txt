@@ -1,0 +1,7 @@
+﻿PS> kubectl get pods -n demo-app -o wide
+NAME                                        READY   STATUS    RESTARTS   AGE   IP            NODE                     NOMINATED NODE   READINESS GATES
+demo-api-gateway-78fdb7fd97-tjhv5           1/1     Running   0          3d    10.244.0.15   vkr-demo-control-plane   <none>           <none>
+demo-frontend-569f656469-dr4b2              1/1     Running   0          3d    10.244.0.16   vkr-demo-control-plane   <none>           <none>
+demo-notification-worker-7bbbf98cb9-mm8hf   1/1     Running   0          3d    10.244.0.17   vkr-demo-control-plane   <none>           <none>
+demo-order-service-857fd6c645-dgxsk         1/1     Running   0          3d    10.244.0.18   vkr-demo-control-plane   <none>           <none>
+demo-user-service-65cc44b467-vbwkv          1/1     Running   0          3d    10.244.0.19   vkr-demo-control-plane   <none>           <none>

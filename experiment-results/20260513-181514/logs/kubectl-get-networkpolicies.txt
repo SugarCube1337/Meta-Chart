@@ -1,0 +1,7 @@
+﻿PS> kubectl get networkpolicy -n demo-app
+NAME                       POD-SELECTOR                                                                 AGE
+demo-api-gateway           app.kubernetes.io/instance=demo,app.kubernetes.io/name=api-gateway           3d
+demo-frontend              app.kubernetes.io/instance=demo,app.kubernetes.io/name=frontend              3d
+demo-notification-worker   app.kubernetes.io/instance=demo,app.kubernetes.io/name=notification-worker   3d
+demo-order-service         app.kubernetes.io/instance=demo,app.kubernetes.io/name=order-service         3d
+demo-user-service          app.kubernetes.io/instance=demo,app.kubernetes.io/name=user-service          3d
